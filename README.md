@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MyStream - Netflix-Style Streaming Platform
 
 **Version:** 1.2.0  
@@ -462,3 +463,6 @@ For issues, questions, or suggestions:
 ---
 
 **Happy Streaming!** 🎬🍿
+=======
+# Aizen-TV-Web-App
+>>>>>>> 2094670ff031766d0f425257cb13f9ab47f39410
