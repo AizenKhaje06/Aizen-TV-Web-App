@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
@@ -30,7 +30,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const resolvedParams = React.use(params);
   const movieId = parseInt(resolvedParams.id);
   const padding = useResponsivePadding();
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
   
   const { data: movie, isLoading: loadingMovie, error, refetch } = useMovieDetails(movieId);
   const { data: credits } = useMovieCredits(movieId);
@@ -105,9 +104,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
 
   // Get top cast (first 12)
   const topCast = credits?.cast?.slice(0, 12) || [];
-
-  // Get gallery images (backdrops)
-  const galleryImages = images?.backdrops?.slice(0, 12) || [];
 
   return (
     <AppShell>
@@ -465,23 +461,6 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             </div>
           </div>
         </motion.section>
-      )}
-
-      {/* Image Modal */}
-      {selectedImage && (
-        <div
-          className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4"
-          onClick={() => setSelectedImage(null)}
-        >
-          <div className="relative w-full max-w-7xl aspect-video">
-            <Image
-              src={selectedImage}
-              alt="Gallery image"
-              fill
-              className="object-contain"
-            />
-          </div>
-        </div>
       )}
     </AppShell>
   );
