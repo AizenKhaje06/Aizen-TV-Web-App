@@ -198,6 +198,18 @@ export class TMDBClient {
   }> {
     return axiosClient.get(TMDB_ENDPOINTS.MOVIE_IMAGES(movieId));
   }
+
+  /**
+   * Fetch TV show images (logos, posters, backdrops)
+   */
+  async getTVImages(tvId: number): Promise<{
+    id: number;
+    backdrops: Array<{ file_path: string; width: number; height: number }>;
+    logos: Array<{ file_path: string; width: number; height: number }>;
+    posters: Array<{ file_path: string; width: number; height: number }>;
+  }> {
+    return axiosClient.get(TMDB_ENDPOINTS.TV_IMAGES(tvId));
+  }
 }
 
 export const tmdbClient = new TMDBClient();

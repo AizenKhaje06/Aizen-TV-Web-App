@@ -14,6 +14,11 @@ const nextConfig = {
         hostname: 'images.justwatch.com',
         pathname: '/icon/**',
       },
+      {
+        protocol: 'https',
+        hostname: 's4.anilist.co',
+        pathname: '/file/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -78,10 +83,33 @@ const pwaConfig = withPWA({
       },
     },
     {
+      urlPattern: /^https:\/\/s4\.anilist\.co\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'anilist-images',
+        expiration: {
+          maxEntries: 64,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+      },
+    },
+    {
       urlPattern: /^https:\/\/api\.themoviedb\.org\/.*/i,
       handler: 'NetworkFirst',
       options: {
         cacheName: 'tmdb-api',
+        networkTimeoutSeconds: 10,
+        expiration: {
+          maxEntries: 32,
+          maxAgeSeconds: 24 * 60 * 60, // 1 day
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/graphql\.anilist\.co\/.*/i,
+      handler: 'NetworkFirst',
+      options: {
+        cacheName: 'anilist-api',
         networkTimeoutSeconds: 10,
         expiration: {
           maxEntries: 32,

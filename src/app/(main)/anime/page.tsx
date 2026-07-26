@@ -1,39 +1,215 @@
 'use client';
 
-import { Sidebar } from '@/components/layout/sidebar';
-import { Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+import { AppShell } from '@/components/layout/app-shell';
+import { HeroBanner } from '@/components/media/hero-banner';
+import { SimpleMediaCarousel } from '@/components/media/simple-media-carousel';
+import {
+  useTrendingAnime,
+  usePopularAnime,
+  useTopRatedAnime,
+  useCurrentlyAiringAnime,
+  useUpcomingAnime
+} from '@/hooks/anilist/use-anime';
+import { useResponsivePadding } from '@/hooks/use-responsive-padding';
 
 export default function AnimePage() {
-  return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <main className="flex-1">
-        <div className="container mx-auto px-4 md:px-8 lg:px-12 py-8">
-          {/* Page Header */}
-          <div className="flex items-center space-x-3 mb-8">
-            <Sparkles className="w-8 h-8 text-primary" />
-            <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-white">
-                Anime
-              </h1>
-              <p className="text-gray-400">
-                Popular anime series and movies
-              </p>
-            </div>
-          </div>
+  const router = useRouter();
+  const padding = useResponsivePadding();
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-          {/* Coming Soon Message */}
-          <div className="flex flex-col items-center justify-center py-20 space-y-4">
-            <Sparkles className="w-20 h-20 text-gray-700" />
-            <h2 className="text-2xl font-semibold text-gray-400">
-              Coming Soon
-            </h2>
-            <p className="text-gray-500 text-center max-w-md">
-              Anime content section is currently under development. Check back soon for your favorite anime series and movies!
-            </p>
-          </div>
+  // Fetch anime data from AniList
+  const { data: trendingAnime } = useTrendingAnime(1, 20);
+  const { data: popularAnime } = usePopularAnime(1, 20);
+  const { data: topRatedAnime } = useTopRatedAnime(1, 15);
+  const { data: currentlyAiringAnime } = useCurrentlyAiringAnime(1, 20);
+  const { data: upcomingAnime } = useUpcomingAnime(1, 15);
+
+  // Get hero anime (first 5 trending)
+  const heroAnimeList = trendingAnime?.slice(0, 5) || [];
+  const heroAnime = heroAnimeList[currentHeroIndex];
+
+  // Auto-rotate hero every 8 seconds
+  useEffect(() => {
+    if (heroAnimeList.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroAnimeList.length);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [heroAnimeList.length]);
+
+  const handlePlay = (id?: number) => {
+    const animeId = id || heroAnime?.id;
+    // TODO: Navigate to anime watch page
+    router.push(`/anime/${animeId}`);
+  };
+
+  const handleMoreInfo = () => {
+    if (heroAnime) {
+      router.push(`/anime/${heroAnime.id}`);
+    }
+  };
+
+  const handleItemClick = (id: number) => {
+    router.push(`/anime/${id}`);
+  };
+
+  // Transform AniList data for display
+  const transformAnime = (anime: any) => ({
+    id: anime.id,
+    title: anime.title?.english || anime.title?.romaji || anime.title?.native,
+    name: anime.title?.english || anime.title?.romaji || anime.title?.native,
+    posterPath: anime.coverImage?.extraLarge || anime.coverImage?.large,
+    voteAverage: anime.averageScore ? anime.averageScore / 10 : 0,
+    releaseDate: anime.seasonYear?.toString() || '',
+    genreIds: anime.genres || [],
+  });
+
+  return (
+    <AppShell>
+      {/* Hero Section */}
+      {heroAnime && (
+        <HeroBanner
+          title={heroAnime.title?.english || heroAnime.title?.romaji || heroAnime.title?.native}
+          overview={heroAnime.description?.replace(/<[^>]*>/g, '') || ''}
+          backdropPath={heroAnime.bannerImage || heroAnime.coverImage?.extraLarge}
+          logoPath={null}
+          voteAverage={heroAnime.averageScore ? heroAnime.averageScore / 10 : undefined}
+          releaseDate={heroAnime.seasonYear?.toString()}
+          genres={heroAnime.genres || []}
+          onPlay={() => handlePlay()}
+          onMoreInfo={handleMoreInfo}
+        />
+      )}
+
+      {/* Hero Navigation Dots */}
+      {heroAnimeList.length > 1 && (
+        <div className="flex justify-center gap-2 -mt-12 mb-4 relative z-20">
+          {heroAnimeList.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentHeroIndex(index)}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                index === currentHeroIndex
+                  ? 'bg-white w-8'
+                  : 'bg-white/40 w-6 hover:bg-white/60'
+              }`}
+              aria-label={`Go to anime ${index + 1}`}
+            />
+          ))}
         </div>
-      </main>
-    </div>
+      )}
+
+      {/* Content Rows */}
+      <div className="space-y-8 md:space-y-12 py-8 md:py-12">
+        {/* Continue Watching */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Continue Watching
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={popularAnime?.slice(0, 8).map(transformAnime) || []}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-continue-watching"
+          />
+        </div>
+
+        {/* Trending Anime (Top 10) */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Trending Anime
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={trendingAnime?.slice(0, 10).map(transformAnime) || []}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-trending"
+          />
+        </div>
+
+        {/* New Anime Releases */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              New Anime Releases
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={upcomingAnime?.map(transformAnime) || []}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-new-releases"
+          />
+        </div>
+
+        {/* New Episodes */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              New Episodes
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={currentlyAiringAnime?.slice(0, 15).map(transformAnime) || []}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-new-episodes"
+          />
+        </div>
+
+        {/* Currently Airing */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Currently Airing
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={currentlyAiringAnime?.map(transformAnime) || []}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-currently-airing"
+          />
+        </div>
+
+        {/* Top Rated Anime */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Top Rated Anime
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={topRatedAnime?.map(transformAnime) || []}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-top-rated"
+          />
+        </div>
+
+        {/* Recommended For You */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Recommended For You
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={popularAnime?.slice(10, 25).map(transformAnime) || []}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-recommended"
+          />
+        </div>
+      </div>
+    </AppShell>
   );
 }

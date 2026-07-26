@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { RatingBadge } from './rating-badge';
 import { Focusable } from '@/components/navigation/focusable';
 import { useNavigator } from '@/lib/navigation';
+import { useResponsivePadding } from '@/hooks/use-responsive-padding';
 import { ZONES } from '@/lib/navigation/zones';
 import { cn } from '@/lib/cn';
 
@@ -36,21 +37,28 @@ export function HeroBanner({
   onMoreInfo,
 }: HeroBannerProps) {
   const [isMuted, setIsMuted] = useState(true);
+  const [hasAutoFocused, setHasAutoFocused] = useState(false);
   const year = releaseDate ? new Date(releaseDate).getFullYear() : null;
   const navigator = useNavigator();
+  const padding = useResponsivePadding();
 
-  // Auto-focus Play button on mount
+  // Auto-focus Play button ONLY on initial mount, not on hero rotation
   useEffect(() => {
+    if (!navigator || hasAutoFocused) return;
+    
     const timer = setTimeout(() => {
-      navigator.focusById('hero-play-button');
-    }, 500); // Small delay to ensure registration
+      // Only focus if user hasn't scrolled away from the top
+      if (window.scrollY < 100) {
+        navigator.focusById('hero-play-button');
+        setHasAutoFocused(true);
+      }
+    }, 500);
 
     return () => clearTimeout(timer);
-  }, [navigator]);
+  }, [navigator, hasAutoFocused]);
 
   return (
     <motion.div
-      key={title} // Add key for animation
       variants={heroBannerVariants}
       initial="hidden"
       animate="visible"
@@ -75,8 +83,14 @@ export function HeroBanner({
         <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      {/* Content - Added left padding to account for sidebar (80px collapsed) */}
-      <div className="relative z-10 h-full flex items-center pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+      {/* Content - Dynamic padding based on screen size */}
+      <div 
+        className="relative z-10 h-full flex items-center overflow-hidden"
+        style={{
+          paddingLeft: padding.left,
+          paddingRight: padding.right,
+        }}
+      >
         <motion.div
           variants={fadeInUpVariants}
           className="max-w-2xl space-y-4 md:space-y-6"
@@ -95,7 +109,7 @@ export function HeroBanner({
               />
             </div>
           ) : (
-            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight break-words">
               {title}
             </h1>
           )}
@@ -133,7 +147,7 @@ export function HeroBanner({
           )}
 
           {/* Overview */}
-          <p className="text-sm md:text-base lg:text-lg text-gray-200 line-clamp-3 md:line-clamp-4 max-w-xl">
+          <p className="text-sm md:text-base lg:text-lg text-gray-200 line-clamp-3 md:line-clamp-4 max-w-xl break-words">
             {overview}
           </p>
 

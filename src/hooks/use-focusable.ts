@@ -36,7 +36,7 @@ export function useFocusable({
    * Update element position in registry
    */
   const updatePosition = useCallback(() => {
-    if (!elementRef.current) return;
+    if (!navigator || !elementRef.current) return;
 
     const rect = elementRef.current.getBoundingClientRect();
     const position = {
@@ -65,7 +65,7 @@ export function useFocusable({
    * Register element
    */
   useEffect(() => {
-    if (!enabled || !elementRef.current) return;
+    if (!navigator || !enabled || !elementRef.current) return;
 
     updatePosition();
 
@@ -88,13 +88,16 @@ export function useFocusable({
    * Focus this element programmatically
    */
   const focus = useCallback(() => {
-    navigator.focusById(id);
+    if (navigator) {
+      navigator.focusById(id);
+    }
   }, [navigator, id]);
 
   /**
    * Check if this element is currently focused
    */
   const isFocused = useCallback(() => {
+    if (!navigator) return false;
     const context = navigator.getContext();
     return context.currentFocus === id;
   }, [navigator, id]);

@@ -96,13 +96,22 @@ export function SimpleMediaCard({
         <div className="relative flex flex-col">
           {/* Poster */}
           <div className="relative w-[200px] h-[300px] rounded-lg overflow-hidden bg-gray-800">
-            <Image
-              src={posterPath}
-              alt={title}
-              fill
-              className="object-cover"
-              sizes="200px"
-            />
+            {posterPath ? (
+              <Image
+                src={posterPath}
+                alt={title}
+                fill
+                className="object-cover"
+                sizes="200px"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <div className="text-gray-500 text-center p-4">
+                  <div className="text-4xl mb-2">🎬</div>
+                  <p className="text-xs">{title}</p>
+                </div>
+              </div>
+            )}
 
             {/* Rating Badge - Always Visible (Top Right) */}
             {voteAverage && (

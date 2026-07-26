@@ -123,3 +123,15 @@ export function useMovieImages(movieId: number) {
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 }
+
+/**
+ * Fetch movie videos (trailers, teasers, clips)
+ */
+export function useMovieVideos(movieId: number) {
+  return useQuery({
+    queryKey: [QUERY_KEYS.MOVIE_DETAILS, movieId, 'videos'],
+    queryFn: () => moviesService.getVideos(movieId),
+    enabled: !!movieId && movieId > 0,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+}

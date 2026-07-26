@@ -1,84 +1,226 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sidebar } from '@/components/layout/sidebar';
-import { AdaptiveContentRow } from '@/components/media/adaptive-content-row';
-import { useTrendingMovies, usePopularMovies, useTopRatedMovies, useUpcomingMovies } from '@/hooks/tmdb/use-movies';
-import { getPosterUrl } from '@/services/tmdb/images';
+import { AppShell } from '@/components/layout/app-shell';
+import { HeroBanner } from '@/components/media/hero-banner';
+import { SimpleMediaCarousel } from '@/components/media/simple-media-carousel';
+import { 
+  useTrendingMovies, 
+  usePopularMovies, 
+  useTopRatedMovies, 
+  useUpcomingMovies,
+  useMovieImages,
+  useMovieDetails
+} from '@/hooks/tmdb/use-movies';
+import { useResponsivePadding } from '@/hooks/use-responsive-padding';
+import { getBackdropUrl, getPosterUrl, getLogoUrl } from '@/services/tmdb/images';
+import { ZONES } from '@/lib/navigation/zones';
 
 export default function MoviesPage() {
   const router = useRouter();
+  const padding = useResponsivePadding();
+  const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-  // Fetch movie data
-  const { data: trendingMovies, isLoading: loadingTrending } = useTrendingMovies();
-  const { data: popularMovies, isLoading: loadingPopular } = usePopularMovies();
-  const { data: topRatedMovies, isLoading: loadingTopRated } = useTopRatedMovies();
-  const { data: upcomingMovies, isLoading: loadingUpcoming } = useUpcomingMovies();
+  // Fetch main movie data
+  const { data: trendingMovies } = useTrendingMovies();
+  const { data: popularMovies } = usePopularMovies();
+  const { data: topRatedMovies } = useTopRatedMovies();
+  const { data: upcomingMovies } = useUpcomingMovies();
 
-  // Transform movie data
+  // Get hero movies (first 5 popular movies)
+  const heroMovies = popularMovies?.results?.slice(0, 5) || [];
+  const heroMovie = heroMovies[currentHeroIndex];
+
+  // Auto-rotate hero every 8 seconds
+  useEffect(() => {
+    if (heroMovies.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentHeroIndex((prev) => (prev + 1) % heroMovies.length);
+    }, 8000);
+
+    return () => clearInterval(interval);
+  }, [heroMovies.length]);
+
+  // Fetch logo for current hero movie
+  const { data: heroImages } = useMovieImages(heroMovie?.id || 0);
+  const heroLogo = heroImages?.logos?.[0]?.file_path 
+    ? getLogoUrl(heroImages.logos[0].file_path, 'original')
+    : null;
+
+  // Fetch full details for genres
+  const { data: heroDetails } = useMovieDetails(heroMovie?.id || 0);
+
+  const handlePlay = (id?: number) => {
+    const mediaId = id || heroMovie?.id;
+    router.push(`/watch/movie/${mediaId}`);
+  };
+
+  const handleMoreInfo = () => {
+    if (heroMovie) {
+      router.push(`/movie/${heroMovie.id}`);
+    }
+  };
+
+  const handleItemClick = (id: number) => {
+    router.push(`/movie/${id}`);
+  };
+
+  // Transform data for display
   const transformMovie = (movie: any) => ({
     id: movie.id,
     title: movie.title,
     name: movie.title,
     posterPath: getPosterUrl(movie.poster_path) || '',
     voteAverage: movie.vote_average,
+    releaseDate: movie.release_date,
+    genreIds: movie.genre_ids,
   });
 
-  const handleItemClick = (id: number) => {
-    router.push(`/movie/${id}`);
-  };
-
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar />
-      <main className="flex-1">
-        <div className="container mx-auto px-4 md:px-8 lg:px-12 py-8 space-y-12">
-          {/* Page Header */}
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-white">
-              Movies
-            </h1>
-            <p className="text-gray-400">
-              Discover trending, popular, and top-rated movies
-            </p>
-          </div>
+    <AppShell>
+      {/* Hero Section */}
+      {heroMovie && (
+        <HeroBanner
+          title={heroMovie.title}
+          overview={heroMovie.overview}
+          backdropPath={getBackdropUrl(heroMovie.backdrop_path, 'original') || ''}
+          logoPath={heroLogo}
+          voteAverage={heroMovie.vote_average}
+          releaseDate={heroMovie.release_date}
+          genres={heroDetails?.genres?.map((g: any) => g.name) || []}
+          onPlay={() => handlePlay()}
+          onMoreInfo={handleMoreInfo}
+        />
+      )}
 
-          {/* Movie Sections */}
-          <div className="space-y-12">
-            <AdaptiveContentRow
-              title="Trending Now"
-              items={trendingMovies?.map(transformMovie) || []}
-              type="movie"
-              isLoading={loadingTrending}
-              onItemClick={handleItemClick}
+      {/* Hero Navigation Dots */}
+      {heroMovies.length > 1 && (
+        <div className="flex justify-center gap-2 -mt-12 mb-4 relative z-20">
+          {heroMovies.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentHeroIndex(index)}
+              className={`h-1 rounded-full transition-all duration-300 ${
+                index === currentHeroIndex
+                  ? 'bg-white w-8'
+                  : 'bg-white/40 w-6 hover:bg-white/60'
+              }`}
+              aria-label={`Go to movie ${index + 1}`}
             />
-
-            <AdaptiveContentRow
-              title="Popular on MyStream"
-              items={popularMovies?.results?.map(transformMovie) || []}
-              type="movie"
-              isLoading={loadingPopular}
-              onItemClick={handleItemClick}
-            />
-
-            <AdaptiveContentRow
-              title="Top Rated"
-              items={topRatedMovies?.results?.map(transformMovie) || []}
-              type="movie"
-              isLoading={loadingTopRated}
-              onItemClick={handleItemClick}
-            />
-
-            <AdaptiveContentRow
-              title="Coming Soon"
-              items={upcomingMovies?.results?.map(transformMovie) || []}
-              type="movie"
-              isLoading={loadingUpcoming}
-              onItemClick={handleItemClick}
-            />
-          </div>
+          ))}
         </div>
-      </main>
-    </div>
+      )}
+
+      {/* Content Rows */}
+      <div className="space-y-8 md:space-y-12 py-8 md:py-12">
+        {/* Continue Watching */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Continue Watching
+            </h2>
+          </div>
+          {/* TODO: Add ContinueWatchingRow component */}
+          <SimpleMediaCarousel
+            items={popularMovies?.results?.slice(0, 8).map(transformMovie) || []}
+            type="movie"
+            onItemClick={handleItemClick}
+            zoneId="movies-continue-watching"
+          />
+        </div>
+
+        {/* Trending Movies */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Trending Movies
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={trendingMovies?.map(transformMovie) || []}
+            type="movie"
+            onItemClick={handleItemClick}
+            zoneId={ZONES.TRENDING_MOVIES}
+          />
+        </div>
+
+        {/* New Releases */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              New Releases
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={upcomingMovies?.results?.map(transformMovie) || []}
+            type="movie"
+            onItemClick={handleItemClick}
+            zoneId={ZONES.UPCOMING_MOVIES}
+          />
+        </div>
+
+        {/* Recently Added */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Recently Added
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={popularMovies?.results?.slice(8, 23).map(transformMovie) || []}
+            type="movie"
+            onItemClick={handleItemClick}
+            zoneId="movies-recently-added"
+          />
+        </div>
+
+        {/* Top Rated Movies */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Top Rated Movies
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={topRatedMovies?.results?.map(transformMovie) || []}
+            type="movie"
+            onItemClick={handleItemClick}
+            zoneId={ZONES.TOP_RATED_MOVIES}
+          />
+        </div>
+
+        {/* Popular Movies */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Popular Movies
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={popularMovies?.results?.map(transformMovie) || []}
+            type="movie"
+            onItemClick={handleItemClick}
+            zoneId="movies-popular"
+          />
+        </div>
+
+        {/* Recommended For You */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Recommended For You
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={trendingMovies?.slice(10, 25).map(transformMovie) || []}
+            type="movie"
+            onItemClick={handleItemClick}
+            zoneId="movies-recommended"
+          />
+        </div>
+      </div>
+    </AppShell>
   );
 }

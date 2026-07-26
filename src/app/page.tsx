@@ -16,6 +16,7 @@ import {
   useMovieDetails
 } from '@/hooks/tmdb/use-movies';
 import { usePopularTV, useTrendingTV } from '@/hooks/tmdb/use-tv';
+import { useResponsivePadding } from '@/hooks/use-responsive-padding';
 import { getBackdropUrl, getPosterUrl, getLogoUrl } from '@/services/tmdb/images';
 import { ZONES } from '@/lib/navigation/zones';
 
@@ -36,6 +37,7 @@ const GENRE_IDS = {
 export default function HomePage() {
   const router = useRouter();
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+  const padding = useResponsivePadding();
 
   // Fetch main content
   const { data: trendingMovies } = useTrendingMovies();
@@ -120,7 +122,6 @@ export default function HomePage() {
       {/* Hero Section */}
       {heroMovie && (
         <HeroBanner
-          key={heroMovie.id} // Force re-render on movie change
           title={heroMovie.title}
           overview={heroMovie.overview}
           backdropPath={getBackdropUrl(heroMovie.backdrop_path, 'original') || ''}
@@ -158,7 +159,7 @@ export default function HomePage() {
 
         {/* Trending Right Now Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Trending Right Now
             </h2>
@@ -172,7 +173,7 @@ export default function HomePage() {
 
         {/* Studio & Platforms Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Studio & Platforms
             </h2>
@@ -182,7 +183,7 @@ export default function HomePage() {
 
         {/* New Movies Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               New Movies
             </h2>
@@ -197,7 +198,7 @@ export default function HomePage() {
 
         {/* Popular TV Shows Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Popular TV Shows
             </h2>
@@ -212,7 +213,7 @@ export default function HomePage() {
 
         {/* Action Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Action
             </h2>
@@ -227,7 +228,7 @@ export default function HomePage() {
 
         {/* Comedy Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Comedy
             </h2>
@@ -242,7 +243,7 @@ export default function HomePage() {
 
         {/* Drama Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Drama
             </h2>
@@ -257,7 +258,7 @@ export default function HomePage() {
 
         {/* Horror Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Horror
             </h2>
@@ -272,7 +273,7 @@ export default function HomePage() {
 
         {/* Sci-Fi Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Sci-Fi
             </h2>
@@ -287,7 +288,7 @@ export default function HomePage() {
 
         {/* Thriller Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Thriller
             </h2>
@@ -302,7 +303,7 @@ export default function HomePage() {
 
         {/* Romance Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Romance
             </h2>
@@ -317,7 +318,7 @@ export default function HomePage() {
 
         {/* Animation Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Animation
             </h2>
@@ -332,7 +333,7 @@ export default function HomePage() {
 
         {/* Crime Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Crime
             </h2>
@@ -347,7 +348,7 @@ export default function HomePage() {
 
         {/* Documentary Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Documentary
             </h2>
@@ -362,7 +363,7 @@ export default function HomePage() {
 
         {/* Trending Anime Section */}
         <div className="space-y-6">
-          <div className="pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
               Trending Anime
             </h2>

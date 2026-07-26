@@ -94,6 +94,13 @@ export class MoviesService {
   async getImages(movieId: number) {
     return tmdbClient.getMovieImages(movieId);
   }
+
+  /**
+   * Get movie videos (trailers, teasers, clips)
+   */
+  async getVideos(movieId: number) {
+    return tmdbClient.getMovieVideos(movieId);
+  }
 }
 
 export const moviesService = new MoviesService();

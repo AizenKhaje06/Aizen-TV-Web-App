@@ -9,6 +9,16 @@ const config: Config = {
     './src/features/**/*.{js,ts,jsx,tsx,mdx}',
   ],
   theme: {
+    screens: {
+      'xs': '475px',
+      'sm': '640px',
+      'md': '768px',
+      'lg': '1024px',
+      'xl': '1280px',
+      '2xl': '1536px',
+      '3xl': '1920px',
+      '4xl': '2560px',
+    },
     extend: {
       colors: {
         background: '#050505',
@@ -34,6 +44,11 @@ const config: Config = {
           foreground: '#FFFFFF',
         },
         border: '#2A2A2A',
+      },
+      spacing: {
+        'sidebar-collapsed': '80px',
+        'sidebar-expanded-mobile': '200px',
+        'sidebar-expanded-desktop': '240px',
       },
       borderRadius: {
         lg: '0.5rem',

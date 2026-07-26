@@ -88,6 +88,18 @@ export class TVService {
       with_genres: genreId.toString(),
     });
   }
+
+  /**
+   * Get TV show images (logos, posters, backdrops)
+   */
+  async getImages(tvId: number): Promise<{
+    id: number;
+    backdrops: Array<{ file_path: string; width: number; height: number }>;
+    logos: Array<{ file_path: string; width: number; height: number }>;
+    posters: Array<{ file_path: string; width: number; height: number }>;
+  }> {
+    return tmdbClient.getTVImages(tvId);
+  }
 }
 
 export const tvService = new TVService();

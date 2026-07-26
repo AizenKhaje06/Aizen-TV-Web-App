@@ -3,6 +3,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SimpleMediaCard } from './simple-media-card';
+import { useResponsivePadding } from '@/hooks/use-responsive-padding';
 import { cn } from '@/lib/cn';
 
 interface MediaItem {
@@ -31,6 +32,7 @@ export function SimpleMediaCarousel({
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
+  const padding = useResponsivePadding();
 
   const checkScrollability = () => {
     if (!scrollContainerRef.current) return;
@@ -65,7 +67,7 @@ export function SimpleMediaCarousel({
   };
 
   return (
-    <div className="relative group/carousel">
+    <div className="relative group/carousel overflow-hidden">
       {/* Left Arrow */}
       {canScrollLeft && (
         <button
@@ -84,11 +86,11 @@ export function SimpleMediaCarousel({
         ref={scrollContainerRef}
         onScroll={checkScrollability}
         className={cn(
-          'flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth',
-          'pl-24 pr-4 md:pl-28 md:pr-12 lg:pl-32 lg:pr-16',
-          'py-2'
+          'flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth py-2'
         )}
         style={{
+          paddingLeft: padding.left,
+          paddingRight: padding.right,
           scrollbarWidth: 'none',
           msOverflowStyle: 'none',
         }}

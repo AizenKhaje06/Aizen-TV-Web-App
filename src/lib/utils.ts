@@ -10,13 +10,36 @@ export function formatRuntime(minutes: number): string {
 /**
  * Format date to readable string
  */
-export function formatDate(date: string | Date): string {
+export function formatDate(date: string | Date, format: 'full' | 'year' = 'full'): string {
   const d = typeof date === 'string' ? new Date(date) : date;
+  
+  if (format === 'year') {
+    return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+    });
+  }
+  
   return d.toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
     day: 'numeric',
   });
+}
+
+/**
+ * Format currency to readable string (e.g., $1000000 -> $1.0M)
+ */
+export function formatCurrency(amount: number): string {
+  if (amount >= 1000000000) {
+    return `$${(amount / 1000000000).toFixed(1)}B`;
+  }
+  if (amount >= 1000000) {
+    return `$${(amount / 1000000).toFixed(1)}M`;
+  }
+  if (amount >= 1000) {
+    return `$${(amount / 1000).toFixed(1)}K`;
+  }
+  return `$${amount}`;
 }
 
 /**

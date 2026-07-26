@@ -112,3 +112,20 @@ export function useTVByGenre(genreId: number, params?: PaginationParams): UseQue
     staleTime: 1000 * 60 * 60, // 1 hour
   });
 }
+
+/**
+ * Fetch TV show images (logos, posters, backdrops)
+ */
+export function useTVImages(tvId: number): UseQueryResult<{
+  id: number;
+  backdrops: Array<{ file_path: string; width: number; height: number }>;
+  logos: Array<{ file_path: string; width: number; height: number }>;
+  posters: Array<{ file_path: string; width: number; height: number }>;
+}> {
+  return useQuery({
+    queryKey: ['tv-images', tvId],
+    queryFn: () => tvService.getImages(tvId),
+    enabled: !!tvId && tvId > 0,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+}

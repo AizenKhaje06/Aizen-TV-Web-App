@@ -59,8 +59,44 @@ export function Sidebar() {
     if (isActualTVDevice && isTVMode) {
       setIsExpanded(true);
     }
-    // Don't force expand for desktop even if TV mode is on (for testing)
-  }, [isTVMode]);
+    
+    // Handle window resize - immediate response
+    const handleResize = () => {
+      const width = window.innerWidth;
+      
+      // Update CSS custom property for sidebar width
+      document.documentElement.style.setProperty(
+        '--sidebar-width',
+        isExpanded 
+          ? (width < 768 ? '200px' : '240px')
+          : '80px'
+      );
+      
+      // Auto-collapse on mobile/tablet when resizing (unless actual TV device)
+      if (width < 1024 && !isActualTVDevice && !isTVMode) {
+        setIsExpanded(false);
+      }
+      
+      // Force layout recalculation
+      requestAnimationFrame(() => {
+        document.body.style.width = '100%';
+      });
+    };
+    
+    // Initial setup
+    handleResize();
+    
+    // Listen to resize events
+    window.addEventListener('resize', handleResize);
+    
+    // Also handle orientation change for mobile devices
+    window.addEventListener('orientationchange', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.removeEventListener('orientationchange', handleResize);
+    };
+  }, [isTVMode, isExpanded]);
 
   // TV Mode: Keyboard navigation for D-pad
   useEffect(() => {
@@ -187,7 +223,7 @@ export function Sidebar() {
       <motion.aside
         initial={false}
         animate={{
-          width: isExpanded ? 240 : 80,
+          width: isExpanded ? (typeof window !== 'undefined' && window.innerWidth < 768 ? 200 : 240) : 80,
         }}
         transition={{ duration: 0.3, ease: 'easeInOut' }}
         onMouseEnter={() => setIsExpanded(true)}

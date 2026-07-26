@@ -56,8 +56,10 @@ export const viewport: Viewport = {
   themeColor: siteConfig.theme.background,
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  minimumScale: 1,
+  userScalable: true,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({
