@@ -156,7 +156,7 @@ export default function TVShowsPage() {
             items={trendingTV?.map(transformTV) || []}
             type="tv"
             onItemClick={handleItemClick}
-            zoneId={ZONES.TRENDING_TV}
+            zoneId="tv-trending"
           />
         </div>
 

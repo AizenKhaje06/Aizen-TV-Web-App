@@ -142,7 +142,7 @@ export default function MoviesPage() {
             items={trendingMovies?.map(transformMovie) || []}
             type="movie"
             onItemClick={handleItemClick}
-            zoneId={ZONES.TRENDING_MOVIES}
+            zoneId="movies-trending"
           />
         </div>
 
@@ -157,7 +157,7 @@ export default function MoviesPage() {
             items={upcomingMovies?.results?.map(transformMovie) || []}
             type="movie"
             onItemClick={handleItemClick}
-            zoneId={ZONES.UPCOMING_MOVIES}
+            zoneId="movies-upcoming"
           />
         </div>
 
@@ -187,7 +187,7 @@ export default function MoviesPage() {
             items={topRatedMovies?.results?.map(transformMovie) || []}
             type="movie"
             onItemClick={handleItemClick}
-            zoneId={ZONES.TOP_RATED_MOVIES}
+            zoneId="movies-top-rated"
           />
         </div>
 
