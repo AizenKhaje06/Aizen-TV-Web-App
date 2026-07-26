@@ -129,3 +129,15 @@ export function useTVImages(tvId: number): UseQueryResult<{
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
   });
 }
+
+/**
+ * Fetch TV show videos (trailers, teasers, clips)
+ */
+export function useTVVideos(tvId: number) {
+  return useQuery({
+    queryKey: ['tv-videos', tvId],
+    queryFn: () => tvService.getVideos(tvId),
+    enabled: !!tvId && tvId > 0,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+}

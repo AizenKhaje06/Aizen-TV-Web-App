@@ -210,6 +210,42 @@ export class TMDBClient {
   }> {
     return axiosClient.get(TMDB_ENDPOINTS.TV_IMAGES(tvId));
   }
+
+  /**
+   * Fetch movie videos (trailers, teasers, clips)
+   */
+  async getMovieVideos(movieId: number): Promise<{
+    id: number;
+    results: Array<{
+      id: string;
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+      size: number;
+      official: boolean;
+    }>;
+  }> {
+    return axiosClient.get(TMDB_ENDPOINTS.MOVIE_VIDEOS(movieId));
+  }
+
+  /**
+   * Fetch TV show videos (trailers, teasers, clips)
+   */
+  async getTVVideos(tvId: number): Promise<{
+    id: number;
+    results: Array<{
+      id: string;
+      key: string;
+      name: string;
+      site: string;
+      type: string;
+      size: number;
+      official: boolean;
+    }>;
+  }> {
+    return axiosClient.get(TMDB_ENDPOINTS.TV_VIDEOS(tvId));
+  }
 }
 
 export const tmdbClient = new TMDBClient();

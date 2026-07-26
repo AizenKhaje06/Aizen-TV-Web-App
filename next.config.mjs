@@ -19,6 +19,16 @@ const nextConfig = {
         hostname: 's4.anilist.co',
         pathname: '/file/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'img.youtube.com',
+        pathname: '/vi/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'i.ytimg.com',
+        pathname: '/vi/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -89,6 +99,17 @@ const pwaConfig = withPWA({
         cacheName: 'anilist-images',
         expiration: {
           maxEntries: 64,
+          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+        },
+      },
+    },
+    {
+      urlPattern: /^https:\/\/(img|i)\.youtube\.com\/.*/i,
+      handler: 'CacheFirst',
+      options: {
+        cacheName: 'youtube-thumbnails',
+        expiration: {
+          maxEntries: 100,
           maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
         },
       },

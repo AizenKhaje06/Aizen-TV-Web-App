@@ -100,6 +100,13 @@ export class TVService {
   }> {
     return tmdbClient.getTVImages(tvId);
   }
+
+  /**
+   * Get TV show videos (trailers, teasers, clips)
+   */
+  async getVideos(tvId: number) {
+    return tmdbClient.getTVVideos(tvId);
+  }
 }
 
 export const tvService = new TVService();

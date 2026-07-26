@@ -10,11 +10,19 @@ export function formatRuntime(minutes: number): string {
 /**
  * Format date to readable string
  */
-export function formatDate(date: string | Date, format: 'full' | 'year' = 'full'): string {
+export function formatDate(date: string | Date, format: 'full' | 'year' | 'short' = 'full'): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   
   if (format === 'year') {
     return d.toLocaleDateString('en-US', {
+      year: 'numeric',
+    });
+  }
+  
+  if (format === 'short') {
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
       year: 'numeric',
     });
   }

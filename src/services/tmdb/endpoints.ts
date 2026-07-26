@@ -32,6 +32,7 @@ export const TMDB_ENDPOINTS = {
     `/tv/${tvId}/season/${seasonNumber}`,
   TV_EPISODE: (tvId: number, seasonNumber: number, episodeNumber: number) =>
     `/tv/${tvId}/season/${seasonNumber}/episode/${episodeNumber}`,
+  TV_VIDEOS: (id: number) => `/tv/${id}/videos`,
 
   // Search
   SEARCH_MULTI: '/search/multi',
