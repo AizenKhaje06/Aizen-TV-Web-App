@@ -240,7 +240,8 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             variants={fadeInUpVariants}
             initial="hidden"
             animate="visible"
-            className="space-y-3 max-w-4xl mt-8"
+            className="space-y-3 max-w-4xl"
+            style={{ marginTop: '37px' }}
           >
             <h2 className="text-2xl md:text-3xl font-bold text-white">Synopsis</h2>
             <p className="text-gray-300 text-base md:text-lg leading-relaxed">
@@ -253,7 +254,8 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             variants={fadeInUpVariants}
             initial="hidden"
             animate="visible"
-            className="flex flex-wrap items-start gap-x-6 gap-y-2 max-w-[50vw] mt-8"
+            className="flex flex-wrap items-start gap-x-6 gap-y-2 max-w-[50vw]"
+            style={{ marginTop: '37px' }}
           >
             {director && (
               <div className="space-y-0.5">
@@ -306,7 +308,8 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
               variants={fadeInUpVariants}
               initial="hidden"
               animate="visible"
-              className="space-y-3 max-w-[50vw] mt-8"
+              className="space-y-3 max-w-[50vw]"
+              style={{ marginTop: '37px' }}
             >
               <h2 className="text-xl md:text-2xl font-bold text-white">Cast & Crew</h2>
               <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2 scrollbar-hide">
