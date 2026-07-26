@@ -29,6 +29,11 @@ const nextConfig = {
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',
       },
+      {
+        protocol: 'https',
+        hostname: 'anikotoapi.site',
+        pathname: '/**',
+      },
     ],
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -67,6 +72,15 @@ const nextConfig = {
           {
             key: 'Permissions-Policy',
             value: 'camera=(), microphone=(), geolocation=()',
+          },
+        ],
+      },
+      {
+        source: '/watch/:path*',
+        headers: [
+          {
+            key: 'Content-Security-Policy',
+            value: "frame-src 'self' https://megaplay.buzz https://vidsrc.xyz https://vidsrc.pro https://vidsrc.me https://vidsrc.to; script-src 'self' 'unsafe-inline' 'unsafe-eval';",
           },
         ],
       },

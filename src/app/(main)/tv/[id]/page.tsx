@@ -41,11 +41,25 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
   
   // State for selected season
   const [selectedSeasonNumber, setSelectedSeasonNumber] = React.useState(1);
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
+  const [selectedTrailer, setSelectedTrailer] = React.useState<string | null>(null);
   const { data: seasonDetails } = useSeasonDetails(tvId, selectedSeasonNumber);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
   
   const isFavorite = useUserStore((state) => state.isFavorite(tvId));
   const addFavorite = useUserStore((state) => state.addFavorite);
   const removeFavorite = useUserStore((state) => state.removeFavorite);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handlePlay = () => {
     // Play first episode of first season
@@ -96,7 +110,7 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
     };
   };
 
-  // Get official logo
+  // Get official logo from TMDB
   const officialLogo = images?.logos?.find((logo: any) => logo.iso_639_1 === 'en') || images?.logos?.[0];
   const logoUrl = officialLogo?.file_path ? getLogoUrl(officialLogo.file_path, 'original') : null;
 
@@ -232,7 +246,7 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
             </button>
             {trailer && (
               <button
-                onClick={() => window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank')}
+                onClick={() => setSelectedTrailer(trailer.key)}
                 className="flex items-center gap-3 px-8 py-4 bg-white/20 backdrop-blur-sm text-white rounded-lg font-bold text-lg hover:bg-white/30 focus:bg-white/30 focus:scale-105 transition-all focus:ring-4 focus:ring-white/50 focus:outline-none"
               >
                 <Info className="w-6 h-6" />
@@ -358,52 +372,52 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
       >
         <div className="space-y-4">
           <h2 className="text-3xl font-bold text-white">TV Show Details</h2>
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <p className="text-sm text-gray-400">First Air Date</p>
-                <p className="text-lg text-white flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
+            <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">First Air Date</p>
+                <p className="text-sm text-white flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
                   {formatDate(tvShow.first_air_date)}
                 </p>
               </div>
               {tvShow.last_air_date && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-400">Last Air Date</p>
-                  <p className="text-lg text-white flex items-center gap-2">
-                    <Calendar className="w-5 h-5" />
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-400">Last Air Date</p>
+                  <p className="text-sm text-white flex items-center gap-2">
+                    <Calendar className="w-4 h-4" />
                     {formatDate(tvShow.last_air_date)}
                   </p>
                 </div>
               )}
-              <div className="space-y-2">
-                <p className="text-sm text-gray-400">Rating</p>
-                <p className="text-lg text-white flex items-center gap-2">
-                  <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Rating</p>
+                <p className="text-sm text-white flex items-center gap-2">
+                  <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
                   {tvShow.vote_average.toFixed(1)}/10 ({tvShow.vote_count?.toLocaleString()} votes)
                 </p>
               </div>
               {tvShow.episode_run_time && tvShow.episode_run_time.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-400">Episode Runtime</p>
-                  <p className="text-lg text-white flex items-center gap-2">
-                    <Clock className="w-5 h-5" />
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-400">Episode Runtime</p>
+                  <p className="text-sm text-white flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
                     ~{tvShow.episode_run_time[0]} min
                   </p>
                 </div>
               )}
               {tvShow.production_countries && tvShow.production_countries.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-400">Countries</p>
-                  <p className="text-lg text-white">
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-400">Countries</p>
+                  <p className="text-sm text-white">
                     {tvShow.production_countries.map((c: any) => c.name).join(', ')}
                   </p>
                 </div>
               )}
               {tvShow.number_of_episodes && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-400">Total Episodes</p>
-                  <p className="text-lg text-white">
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-400">Total Episodes</p>
+                  <p className="text-sm text-white">
                     {tvShow.number_of_episodes} Episodes
                   </p>
                 </div>
@@ -427,24 +441,40 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
             <div className="flex items-center justify-between">
               <h2 className="text-3xl font-bold text-white">Seasons & Episodes</h2>
               
-              {/* Season Dropdown - Styled like screenshot */}
-              <div className="relative min-w-[260px]">
-                <select
-                  value={selectedSeasonNumber}
-                  onChange={(e) => setSelectedSeasonNumber(parseInt(e.target.value))}
-                  className="appearance-none w-full bg-gray-700 text-white rounded-md px-5 py-2.5 pr-10 text-base font-semibold focus:outline-none focus:ring-2 focus:ring-cyan-500 cursor-pointer hover:bg-gray-600 transition-colors border border-gray-600"
+              {/* Custom Season Dropdown - Matching Screenshot Design */}
+              <div className="relative" ref={dropdownRef}>
+                <button
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className="flex items-center justify-between min-w-[240px] bg-gray-700/90 text-white rounded-lg px-5 py-3 text-base font-semibold hover:bg-gray-600/90 transition-colors border border-gray-600"
                 >
-                  {tvShow.seasons.filter(s => s.season_number > 0).map((season: any) => (
-                    <option key={season.id} value={season.season_number} className="bg-gray-800 text-white font-normal">
-                      Season {season.season_number} ({season.episode_count} Episodes)
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <span>Season {selectedSeasonNumber}</span>
+                  <svg className="w-5 h-5 text-white ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
-                </div>
+                </button>
+                
+                {/* Dropdown Menu */}
+                {isDropdownOpen && (
+                  <div className="absolute top-full right-0 mt-2 min-w-[240px] bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-700 shadow-2xl z-50 overflow-hidden">
+                    {tvShow.seasons.filter(s => s.season_number > 0).map((season: any) => (
+                      <button
+                        key={season.id}
+                        onClick={() => {
+                          setSelectedSeasonNumber(season.season_number);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-5 py-3 transition-colors ${
+                          selectedSeasonNumber === season.season_number
+                            ? 'bg-red-600 text-white font-bold'
+                            : 'text-gray-300 hover:bg-gray-700/80'
+                        }`}
+                      >
+                        <div className="font-bold text-base">Season {season.season_number}</div>
+                        <div className="text-sm text-gray-400 mt-0.5">{season.episode_count} Episodes</div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -485,7 +515,7 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
                         {/* Thumbnail with badges */}
                         <div className="relative aspect-video rounded-md overflow-hidden bg-gray-800 group-hover/card:ring-2 group-hover/card:ring-cyan-400 transition-all">
                           {(() => {
-                            const imageUrl = getBackdropUrl(episode.still_path, 'w780');
+                            const imageUrl = getBackdropUrl(episode.still_path, 'medium');
                             console.log('=== EPISODE THUMBNAIL DEBUG ===');
                             console.log('Episode:', episode.episode_number, episode.name);
                             console.log('still_path:', episode.still_path);
@@ -495,7 +525,7 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
                           })()}
                           {episode.still_path ? (
                             <img
-                              src={getBackdropUrl(episode.still_path, 'w780') || ''}
+                              src={getBackdropUrl(episode.still_path, 'medium') || ''}
                               alt={episode.name}
                               className="w-full h-full object-cover"
                             />
@@ -641,7 +671,7 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
                 <div
                   key={video.id || index}
                   className="flex-shrink-0 w-[280px] md:w-[320px] cursor-pointer group"
-                  onClick={() => window.open(`https://www.youtube.com/watch?v=${video.key}`, '_blank')}
+                  onClick={() => setSelectedTrailer(video.key)}
                 >
                   <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800">
                     <Image
@@ -666,6 +696,38 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
             </div>
           </div>
         </motion.section>
+      )}
+
+      {/* YouTube Player Modal */}
+      {selectedTrailer && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setSelectedTrailer(null)}
+        >
+          <div 
+            className="relative w-full max-w-6xl aspect-video mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedTrailer(null)}
+              className="absolute -top-12 right-0 text-white hover:text-red-500 transition-colors"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* YouTube Embed */}
+            <iframe
+              className="w-full h-full rounded-lg"
+              src={`https://www.youtube.com/embed/${selectedTrailer}?autoplay=1`}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </div>
       )}
     </AppShell>
   );

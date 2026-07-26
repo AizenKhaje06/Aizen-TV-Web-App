@@ -4,6 +4,7 @@
 
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { anilistClient } from '@/services/anilist/client';
+import { groupAnimeBySeasons, GroupedAnime } from '@/services/anilist/anime-seasons';
 
 /**
  * Fetch trending anime
@@ -81,5 +82,17 @@ export function useAnimeDetails(id: number): UseQueryResult<any> {
     queryFn: () => anilistClient.getAnimeDetails(id),
     enabled: !!id && id > 0,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours
+  });
+}
+
+/**
+ * Fetch grouped anime (seasons, movies, OVAs, etc.)
+ */
+export function useGroupedAnime(id: number): UseQueryResult<GroupedAnime> {
+  return useQuery({
+    queryKey: ['anilist-grouped', id],
+    queryFn: () => groupAnimeBySeasons(id),
+    enabled: !!id && id > 0,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours (cache for performance)
   });
 }

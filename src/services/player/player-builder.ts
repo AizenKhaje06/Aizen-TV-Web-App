@@ -68,6 +68,8 @@ export function getIframeSandbox(): string {
     'allow-scripts',
     'allow-presentation',
     'allow-forms',
+    'allow-popups',
+    'allow-popups-to-escape-sandbox',
   ].join(' ');
 }
 

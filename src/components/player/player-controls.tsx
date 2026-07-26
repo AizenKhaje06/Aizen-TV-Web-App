@@ -38,15 +38,15 @@ export function PlayerControls({ show, onToggleFullscreen, className = '' }: Pla
             className
           )}
         >
-          {/* Top Bar */}
-          <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/80 to-transparent p-4 md:p-6 pointer-events-auto">
+          {/* Top Bar - Only Back and Fullscreen, let iframe handle playback */}
+          <div className="absolute top-0 left-0 right-0 bg-gradient-to-b from-black/90 to-transparent p-4 md:p-6 pointer-events-auto">
             <div className="flex items-center justify-between">
               {/* Back Button */}
               <button
                 onClick={handleBack}
                 className={cn(
-                  'flex items-center gap-2 text-white hover:text-gray-300 transition-colors',
-                  isTVMode && 'focus:ring-4 focus:ring-primary rounded-lg p-2'
+                  'flex items-center gap-2 px-4 py-2 bg-black/50 rounded-lg text-white hover:bg-black/70 transition-all',
+                  isTVMode && 'focus:ring-4 focus:ring-primary'
                 )}
                 aria-label="Go back"
               >
@@ -65,8 +65,8 @@ export function PlayerControls({ show, onToggleFullscreen, className = '' }: Pla
               <button
                 onClick={handleToggleFullscreen}
                 className={cn(
-                  'flex items-center gap-2 text-white hover:text-gray-300 transition-colors',
-                  isTVMode && 'focus:ring-4 focus:ring-primary rounded-lg p-2'
+                  'flex items-center gap-2 px-4 py-2 bg-black/50 rounded-lg text-white hover:bg-black/70 transition-all',
+                  isTVMode && 'focus:ring-4 focus:ring-primary'
                 )}
                 aria-label={isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'}
               >
@@ -77,11 +77,6 @@ export function PlayerControls({ show, onToggleFullscreen, className = '' }: Pla
                 )}
               </button>
             </div>
-          </div>
-
-          {/* Bottom Bar - Can be extended with more controls */}
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 md:p-6 pointer-events-auto">
-            {/* Future: Add play/pause, progress bar, volume controls here if needed */}
           </div>
         </motion.div>
       )}

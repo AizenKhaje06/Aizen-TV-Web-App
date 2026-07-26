@@ -254,7 +254,7 @@ export async function getAnimeByseason(season: string, year: number, page = 1, p
 }
 
 /**
- * Get anime details
+ * Get anime details with relations
  */
 export async function getAnimeDetails(id: number) {
   const gql = `
@@ -294,12 +294,88 @@ export async function getAnimeDetails(id: number) {
           id
           site
         }
+        startDate {
+          year
+          month
+          day
+        }
+        endDate {
+          year
+          month
+          day
+        }
+        relations {
+          edges {
+            id
+            relationType
+            node {
+              id
+              title {
+                romaji
+                english
+                native
+              }
+              format
+              episodes
+              seasonYear
+              startDate {
+                year
+                month
+                day
+              }
+            }
+          }
+        }
       }
     }
   `;
 
   const data = await query<{ Media: any }>(gql, { id });
   return data.Media;
+}
+
+/**
+ * Get multiple anime by IDs (for fetching related anime)
+ */
+export async function getAnimeByIds(ids: number[]) {
+  const gql = `
+    query ($ids: [Int]) {
+      Page {
+        media(id_in: $ids, type: ANIME) {
+          id
+          title {
+            romaji
+            english
+            native
+          }
+          format
+          episodes
+          seasonYear
+          coverImage {
+            large
+            extraLarge
+          }
+          startDate {
+            year
+            month
+            day
+          }
+          relations {
+            edges {
+              relationType
+              node {
+                id
+                format
+              }
+            }
+          }
+        }
+      }
+    }
+  `;
+
+  const data = await query<{ Page: { media: any[] } }>(gql, { ids });
+  return data.Page.media;
 }
 
 export const anilistClient = {
@@ -310,4 +386,5 @@ export const anilistClient = {
   getUpcomingAnime,
   getAnimeByseason,
   getAnimeDetails,
+  getAnimeByIds,
 };

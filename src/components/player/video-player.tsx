@@ -67,7 +67,7 @@ export function VideoPlayer({ source, className = '' }: VideoPlayerProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [source.tmdbId, source.type, source.title, source.season, source.episode]);
 
-  // Auto-hide controls
+  // Auto-hide controls - longer delay to allow iframe interaction
   const scheduleHideControls = useCallback(() => {
     if (hideControlsTimer.current) {
       clearTimeout(hideControlsTimer.current);
@@ -77,7 +77,7 @@ export function VideoPlayer({ source, className = '' }: VideoPlayerProps) {
       if (!isPaused) {
         setShowControls(false);
       }
-    }, 3000);
+    }, 5000); // Increased to 5 seconds to allow iframe controls usage
   }, [isPaused]);
 
   // Show controls on mouse move
@@ -163,16 +163,16 @@ export function VideoPlayer({ source, className = '' }: VideoPlayerProps) {
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setShowControls(false)}
     >
-      {/* Video Player Frame */}
+      {/* Video Player Frame - iframe controls are now accessible */}
       <PlayerFrame
         source={source}
         onLoad={handlePlayerLoad}
         onError={handlePlayerError}
       />
 
-      {/* Player Controls Overlay */}
+      {/* Player Controls Overlay - Only shows Back and Fullscreen */}
       <PlayerControls
-        show={showControls || isPaused}
+        show={showControls}
         onToggleFullscreen={handleToggleFullscreen}
       />
     </div>

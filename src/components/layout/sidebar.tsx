@@ -251,12 +251,19 @@ export function Sidebar() {
               className="flex items-center"
             >
               {isExpanded ? (
-                <span className="text-2xl font-bold whitespace-nowrap">
-                  <span className="text-white">My</span>
-                  <span className="text-primary">Stream</span>
-                </span>
+                /* Expanded: Only show LogoText */
+                <img 
+                  src="/LogoText.png" 
+                  alt="App Name" 
+                  className="h-8 w-auto object-contain"
+                />
               ) : (
-                <span className="text-2xl font-bold text-primary">MS</span>
+                /* Collapsed: Only show Logo icon */
+                <img 
+                  src="/Logo.png" 
+                  alt="App Logo" 
+                  className="h-10 w-auto object-contain"
+                />
               )}
             </motion.div>
           </Link>

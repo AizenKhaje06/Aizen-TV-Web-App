@@ -38,6 +38,9 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
   const { data: images } = useMovieImages(movieId);
   const { data: videos } = useMovieVideos(movieId);
   
+  // State for YouTube modal
+  const [selectedTrailer, setSelectedTrailer] = React.useState<string | null>(null);
+  
   const isFavorite = useUserStore((state) => state.isFavorite(movieId));
   const addFavorite = useUserStore((state) => state.addFavorite);
   const removeFavorite = useUserStore((state) => state.removeFavorite);
@@ -226,7 +229,7 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
             </button>
             {trailer && (
               <button
-                onClick={() => window.open(`https://www.youtube.com/watch?v=${trailer.key}`, '_blank')}
+                onClick={() => setSelectedTrailer(trailer.key)}
                 className="flex items-center gap-3 px-8 py-4 bg-white/20 backdrop-blur-sm text-white rounded-lg font-bold text-lg hover:bg-white/30 focus:bg-white/30 focus:scale-105 transition-all focus:ring-4 focus:ring-white/50 focus:outline-none"
               >
                 <Info className="w-6 h-6" />
@@ -341,44 +344,88 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
+      {/* Trailers & Videos Section - Horizontal Single Line */}
+      {videos?.results && videos.results.length > 0 && (
+        <motion.section
+          variants={fadeInUpVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="py-8 md:py-12"
+          style={{ paddingLeft: padding.left, paddingRight: padding.right }}
+        >
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-white">Trailers & Videos</h2>
+            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+              {videos.results.slice(0, 5).map((video: any, index: number) => (
+                <div
+                  key={video.id || index}
+                  className="flex-shrink-0 w-[280px] md:w-[320px] cursor-pointer group"
+                  onClick={() => setSelectedTrailer(video.key)}
+                >
+                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800">
+                    <Image
+                      src={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
+                      alt={video.name}
+                      fill
+                      className="object-cover group-hover:scale-105 transition-transform"
+                    />
+                    {/* Play overlay */}
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-colors">
+                      <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Play className="w-8 h-8 text-white fill-white ml-1" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <p className="text-white font-medium text-sm line-clamp-2">{video.name}</p>
+                    <p className="text-gray-400 text-xs mt-1">{video.type}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </motion.section>
+      )}
+
       {/* Movie Details */}
       <motion.section
         variants={fadeInUpVariants}
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
-        className="py-8 md:py-12"
+        className="pt-0 pb-8 md:pb-12"
         style={{ paddingLeft: padding.left, paddingRight: padding.right }}
       >
         <div className="space-y-4">
           <h2 className="text-3xl font-bold text-white">Movie Details</h2>
-          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6 space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <p className="text-sm text-gray-400">Release Date</p>
-                <p className="text-lg text-white flex items-center gap-2">
-                  <Calendar className="w-5 h-5" />
+          <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
+            <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Release Date</p>
+                <p className="text-sm text-white flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
                   {formatDate(movie.release_date)}
                 </p>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-400">Runtime</p>
-                <p className="text-lg text-white flex items-center gap-2">
-                  <Clock className="w-5 h-5" />
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Runtime</p>
+                <p className="text-sm text-white flex items-center gap-2">
+                  <Clock className="w-4 h-4" />
                   {formatRuntime(movie.runtime)}
                 </p>
               </div>
-              <div className="space-y-2">
-                <p className="text-sm text-gray-400">Rating</p>
-                <p className="text-lg text-white flex items-center gap-2">
-                  <Star className="w-5 h-5 fill-yellow-500 text-yellow-500" />
+              <div className="space-y-1">
+                <p className="text-xs text-gray-400">Rating</p>
+                <p className="text-sm text-white flex items-center gap-2">
+                  <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
                   {movie.vote_average.toFixed(1)}/10 ({movie.vote_count?.toLocaleString()} votes)
                 </p>
               </div>
               {movie.production_countries && movie.production_countries.length > 0 && (
-                <div className="space-y-2">
-                  <p className="text-sm text-gray-400">Countries</p>
-                  <p className="text-lg text-white">
+                <div className="space-y-1">
+                  <p className="text-xs text-gray-400">Countries</p>
+                  <p className="text-sm text-white">
                     {movie.production_countries.map((c: any) => c.name).join(', ')}
                   </p>
                 </div>
@@ -422,48 +469,36 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
         </div>
       )}
 
-      {/* Trailers & Videos Section - Horizontal Single Line */}
-      {videos?.results && videos.results.length > 0 && (
-        <motion.section
-          variants={fadeInUpVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="py-8 md:py-12"
-          style={{ paddingLeft: padding.left, paddingRight: padding.right }}
+      {/* YouTube Player Modal */}
+      {selectedTrailer && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+          onClick={() => setSelectedTrailer(null)}
         >
-          <div className="space-y-6">
-            <h2 className="text-3xl font-bold text-white">Trailers & Videos</h2>
-            <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
-              {videos.results.slice(0, 5).map((video: any, index: number) => (
-                <div
-                  key={video.id || index}
-                  className="flex-shrink-0 w-[280px] md:w-[320px] cursor-pointer group"
-                  onClick={() => window.open(`https://www.youtube.com/watch?v=${video.key}`, '_blank')}
-                >
-                  <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800">
-                    <Image
-                      src={`https://img.youtube.com/vi/${video.key}/hqdefault.jpg`}
-                      alt={video.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform"
-                    />
-                    {/* Play overlay */}
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/40 group-hover:bg-black/20 transition-colors">
-                      <div className="w-16 h-16 rounded-full bg-red-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Play className="w-8 h-8 text-white fill-white ml-1" />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="mt-2">
-                    <p className="text-white font-medium text-sm line-clamp-2">{video.name}</p>
-                    <p className="text-gray-400 text-xs mt-1">{video.type}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div 
+            className="relative w-full max-w-6xl aspect-video mx-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedTrailer(null)}
+              className="absolute -top-12 right-0 text-white hover:text-red-500 transition-colors"
+            >
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            
+            {/* YouTube Embed */}
+            <iframe
+              className="w-full h-full rounded-lg"
+              src={`https://www.youtube.com/embed/${selectedTrailer}?autoplay=1`}
+              title="YouTube video player"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
           </div>
-        </motion.section>
+        </div>
       )}
     </AppShell>
   );
