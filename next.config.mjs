@@ -70,7 +70,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "frame-src 'self' https://moviesapi.to; script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+            value: "frame-src 'self' https://cinesrc.st https://*.cinesrc.st; script-src 'self' 'unsafe-inline' 'unsafe-eval';",
           },
         ],
       },

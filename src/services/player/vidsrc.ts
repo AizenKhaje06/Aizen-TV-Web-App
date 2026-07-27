@@ -1,43 +1,45 @@
 /**
- * MoviesAPI video provider implementation
- * Provides streaming URLs for movies and TV shows via moviesapi.to
+ * CineSrc video provider implementation
+ * Provides streaming URLs for movies and TV shows via cinesrc.st
  */
 
 import { BaseVideoProvider } from './providers';
 
-const MOVIESAPI_BASE_URL = 'https://moviesapi.to';
+const CINESRC_BASE_URL = 'https://cinesrc.st/embed';
 
 /**
- * MoviesAPI provider for streaming content
+ * CineSrc provider for streaming content
  */
-export class MoviesAPIProvider extends BaseVideoProvider {
-  name = 'moviesapi';
+export class CineSrcProvider extends BaseVideoProvider {
+  name = 'cinesrc';
 
   /**
    * Get movie streaming URL
+   * Format: https://cinesrc.st/embed/movie/{tmdb_id}
    */
   getMovieUrl(tmdbId: number): string {
     const sanitizedId = this.sanitizeId(tmdbId);
-    return `${MOVIESAPI_BASE_URL}/movie/${sanitizedId}`;
+    return `${CINESRC_BASE_URL}/movie/${sanitizedId}`;
   }
 
   /**
    * Get TV episode streaming URL
+   * Format: https://cinesrc.st/embed/tv/{tmdb_id}?s={season}&e={episode}
    */
   getEpisodeUrl(tmdbId: number, season: number, episode: number): string {
     const sanitizedId = this.sanitizeId(tmdbId);
     this.validateEpisode(season, episode);
 
-    return `${MOVIESAPI_BASE_URL}/tv/${sanitizedId}/${season}/${episode}`;
+    return `${CINESRC_BASE_URL}/tv/${sanitizedId}?s=${season}&e=${episode}`;
   }
 
   /**
-   * Validate if URL is from MoviesAPI
+   * Validate if URL is from CineSrc
    */
   validateUrl(url: string): boolean {
     try {
       const urlObj = new URL(url);
-      return urlObj.hostname === 'moviesapi.to';
+      return urlObj.hostname === 'cinesrc.st' && urlObj.pathname.startsWith('/embed');
     } catch {
       return false;
     }
@@ -45,4 +47,4 @@ export class MoviesAPIProvider extends BaseVideoProvider {
 }
 
 // Export singleton instance
-export const moviesAPIProvider = new MoviesAPIProvider();
+export const cinesrcProvider = new CineSrcProvider();
