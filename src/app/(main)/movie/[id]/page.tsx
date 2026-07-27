@@ -93,9 +93,8 @@ export default function MovieDetailsPage({ params }: { params: Promise<{ id: str
     };
   };
 
-  // Get official logo (English only, no fallback to foreign languages)
-  const englishLogos = images?.logos?.filter((logo: any) => logo.iso_639_1 === 'en') || [];
-  const officialLogo = englishLogos[0] || null;
+  // Get official logo
+  const officialLogo = images?.logos?.find((logo: any) => logo.iso_639_1 === 'en') || images?.logos?.[0];
   const logoUrl = officialLogo?.file_path ? getLogoUrl(officialLogo.file_path, 'original') : null;
 
   // Get trailer
