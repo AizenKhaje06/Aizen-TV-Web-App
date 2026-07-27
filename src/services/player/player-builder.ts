@@ -16,13 +16,13 @@ providerRegistry.register(vidsuperProvider);
 
 /**
  * Build video source for a movie
- * Uses VidSuper provider with autoplay and features
+ * Uses CineSrc provider with autoplay and English subtitles
  */
 export function buildMovieSource(
   tmdbId: number,
   title: string
 ): VideoSource {
-  const url = vidsuperProvider.getMovieUrl(tmdbId);
+  const url = cinesrcProvider.getMovieUrl(tmdbId);
 
   return {
     url,
