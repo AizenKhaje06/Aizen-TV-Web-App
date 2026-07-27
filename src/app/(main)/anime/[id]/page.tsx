@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
-import { Play, Plus, Check, Star, Calendar, Tv, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Play, Plus, Check, Star, Calendar, Tv, Users } from 'lucide-react';
 import { AppShell } from '@/components/layout/app-shell';
 import { RatingBadge } from '@/components/media/rating-badge';
 import { GenreBadge } from '@/components/media/genre-badge';
@@ -468,10 +468,11 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
                     >
                       <div className="relative aspect-video rounded-md overflow-hidden bg-gray-800 group-hover/card:ring-2 group-hover/card:ring-cyan-400 transition-all">
                         {thumbnailUrl ? (
-                          <img
+                          <Image
                             src={thumbnailUrl}
                             alt={episodeTitle}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-gray-700 to-gray-900">
