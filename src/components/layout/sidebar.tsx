@@ -26,7 +26,7 @@ const navigation = [
   { name: 'Kids', href: '/kids', icon: Baby },
   { name: 'Anime', href: '/anime', icon: Sparkles },
   { name: 'Live TV', href: '/live', icon: Radio },
-  { name: 'Playlist', href: '/favorites', icon: List },
+  { name: 'My Playlist', href: '/favorites', icon: List },
 ];
 
 export function Sidebar() {

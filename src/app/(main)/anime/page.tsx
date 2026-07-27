@@ -5,29 +5,37 @@ import { useRouter } from 'next/navigation';
 import { AppShell } from '@/components/layout/app-shell';
 import { HeroBanner } from '@/components/media/hero-banner';
 import { SimpleMediaCarousel } from '@/components/media/simple-media-carousel';
-import {
-  useTrendingAnime,
-  usePopularAnime,
-  useTopRatedAnime,
-  useCurrentlyAiringAnime,
-  useUpcomingAnime
-} from '@/hooks/anilist/use-anime';
+import { 
+  useTrendingTV, 
+  usePopularTV, 
+  useTopRatedTV,
+  useTVImages,
+  useTVDetails
+} from '@/hooks/tmdb/use-tv';
 import { useResponsivePadding } from '@/hooks/use-responsive-padding';
+import { getBackdropUrl, getPosterUrl, getLogoUrl } from '@/services/tmdb/images';
 
 export default function AnimePage() {
   const router = useRouter();
   const padding = useResponsivePadding();
   const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
-  // Fetch anime data from AniList
-  const { data: trendingAnime } = useTrendingAnime(1, 20);
-  const { data: popularAnime } = usePopularAnime(1, 20);
-  const { data: topRatedAnime } = useTopRatedAnime(1, 15);
-  const { data: currentlyAiringAnime } = useCurrentlyAiringAnime(1, 20);
-  const { data: upcomingAnime } = useUpcomingAnime(1, 15);
+  // Fetch TV show data (anime are TV shows in TMDB)
+  const { data: trendingTV } = useTrendingTV();
+  const { data: popularTV } = usePopularTV();
+  const { data: topRatedTV } = useTopRatedTV();
 
-  // Get hero anime (first 5 trending)
-  const heroAnimeList = trendingAnime?.slice(0, 5) || [];
+  // Filter for anime only (Japanese origin country OR animation genre 16)
+  const isAnime = (show: any) => {
+    return show.origin_country?.includes('JP') || show.genre_ids?.includes(16);
+  };
+
+  const trendingAnime = trendingTV?.filter(isAnime) || [];
+  const popularAnime = popularTV?.results?.filter(isAnime) || [];
+  const topRatedAnime = topRatedTV?.results?.filter(isAnime) || [];
+
+  // Get hero anime (first 5 popular anime)
+  const heroAnimeList = popularAnime.slice(0, 5);
   const heroAnime = heroAnimeList[currentHeroIndex];
 
   // Auto-rotate hero every 8 seconds
@@ -41,10 +49,21 @@ export default function AnimePage() {
     return () => clearInterval(interval);
   }, [heroAnimeList.length]);
 
+  // Fetch logo for current hero anime
+  const { data: heroImages } = useTVImages(heroAnime?.id || 0);
+  const heroLogo = heroImages?.logos?.[0]?.file_path 
+    ? getLogoUrl(heroImages.logos[0].file_path, 'original')
+    : null;
+
+  // Fetch full details for genres
+  const { data: heroDetails } = useTVDetails(heroAnime?.id || 0);
+
   const handlePlay = (id?: number) => {
     const animeId = id || heroAnime?.id;
-    // TODO: Navigate to anime watch page
-    router.push(`/anime/${animeId}`);
+    if (heroAnime || id) {
+      // Navigate to first episode of first season
+      router.push(`/watch/anime/${animeId}/1/1`);
+    }
   };
 
   const handleMoreInfo = () => {
@@ -57,29 +76,50 @@ export default function AnimePage() {
     router.push(`/anime/${id}`);
   };
 
-  // Transform AniList data for display
+  // Transform TMDB data for display
   const transformAnime = (anime: any) => ({
     id: anime.id,
-    title: anime.title?.english || anime.title?.romaji || anime.title?.native,
-    name: anime.title?.english || anime.title?.romaji || anime.title?.native,
-    posterPath: anime.coverImage?.extraLarge || anime.coverImage?.large,
-    voteAverage: anime.averageScore ? anime.averageScore / 10 : 0,
-    releaseDate: anime.seasonYear?.toString() || '',
-    genreIds: anime.genres || [],
+    title: anime.name,
+    name: anime.name,
+    posterPath: getPosterUrl(anime.poster_path) || '',
+    voteAverage: anime.vote_average,
+    releaseDate: anime.first_air_date,
+    genreIds: anime.genre_ids,
   });
+
+  // Filter anime by sub-genre
+  const actionAnime = trendingAnime.filter((show: any) => 
+    show.genre_ids?.includes(10759) // Action & Adventure
+  );
+
+  const comedyAnime = trendingAnime.filter((show: any) => 
+    show.genre_ids?.includes(35) // Comedy
+  );
+
+  const dramaAnime = trendingAnime.filter((show: any) => 
+    show.genre_ids?.includes(18) // Drama
+  );
+
+  const sciFiAnime = trendingAnime.filter((show: any) => 
+    show.genre_ids?.includes(10765) // Sci-Fi & Fantasy
+  );
+
+  const mysteryAnime = trendingAnime.filter((show: any) => 
+    show.genre_ids?.includes(9648) // Mystery
+  );
 
   return (
     <AppShell>
       {/* Hero Section */}
       {heroAnime && (
         <HeroBanner
-          title={heroAnime.title?.english || heroAnime.title?.romaji || heroAnime.title?.native}
-          overview={heroAnime.description?.replace(/<[^>]*>/g, '') || ''}
-          backdropPath={heroAnime.bannerImage || heroAnime.coverImage?.extraLarge}
-          logoPath={null}
-          voteAverage={heroAnime.averageScore ? heroAnime.averageScore / 10 : undefined}
-          releaseDate={heroAnime.seasonYear?.toString()}
-          genres={heroAnime.genres || []}
+          title={heroAnime.name}
+          overview={heroAnime.overview}
+          backdropPath={getBackdropUrl(heroAnime.backdrop_path, 'original') || ''}
+          logoPath={heroLogo}
+          voteAverage={heroAnime.vote_average}
+          releaseDate={heroAnime.first_air_date}
+          genres={heroDetails?.genres?.map((g: any) => g.name) || []}
           onPlay={() => handlePlay()}
           onMoreInfo={handleMoreInfo}
         />
@@ -113,14 +153,14 @@ export default function AnimePage() {
             </h2>
           </div>
           <SimpleMediaCarousel
-            items={popularAnime?.slice(0, 8).map(transformAnime) || []}
+            items={popularAnime.slice(0, 8).map(transformAnime)}
             type="tv"
             onItemClick={handleItemClick}
             zoneId="anime-continue-watching"
           />
         </div>
 
-        {/* Trending Anime (Top 10) */}
+        {/* Trending Anime */}
         <div className="space-y-6">
           <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
             <h2 className="text-2xl md:text-3xl font-bold text-white">
@@ -128,55 +168,10 @@ export default function AnimePage() {
             </h2>
           </div>
           <SimpleMediaCarousel
-            items={trendingAnime?.slice(0, 10).map(transformAnime) || []}
+            items={trendingAnime.slice(0, 20).map(transformAnime)}
             type="tv"
             onItemClick={handleItemClick}
             zoneId="anime-trending"
-          />
-        </div>
-
-        {/* New Anime Releases */}
-        <div className="space-y-6">
-          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
-            <h2 className="text-2xl md:text-3xl font-bold text-white">
-              New Anime Releases
-            </h2>
-          </div>
-          <SimpleMediaCarousel
-            items={upcomingAnime?.map(transformAnime) || []}
-            type="tv"
-            onItemClick={handleItemClick}
-            zoneId="anime-new-releases"
-          />
-        </div>
-
-        {/* New Episodes */}
-        <div className="space-y-6">
-          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
-            <h2 className="text-2xl md:text-3xl font-bold text-white">
-              New Episodes
-            </h2>
-          </div>
-          <SimpleMediaCarousel
-            items={currentlyAiringAnime?.slice(0, 15).map(transformAnime) || []}
-            type="tv"
-            onItemClick={handleItemClick}
-            zoneId="anime-new-episodes"
-          />
-        </div>
-
-        {/* Currently Airing */}
-        <div className="space-y-6">
-          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
-            <h2 className="text-2xl md:text-3xl font-bold text-white">
-              Currently Airing
-            </h2>
-          </div>
-          <SimpleMediaCarousel
-            items={currentlyAiringAnime?.map(transformAnime) || []}
-            type="tv"
-            onItemClick={handleItemClick}
-            zoneId="anime-currently-airing"
           />
         </div>
 
@@ -188,10 +183,110 @@ export default function AnimePage() {
             </h2>
           </div>
           <SimpleMediaCarousel
-            items={topRatedAnime?.map(transformAnime) || []}
+            items={topRatedAnime.map(transformAnime)}
             type="tv"
             onItemClick={handleItemClick}
             zoneId="anime-top-rated"
+          />
+        </div>
+
+        {/* Action Anime */}
+        {actionAnime.length > 0 && (
+          <div className="space-y-6">
+            <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
+                Action Anime
+              </h2>
+            </div>
+            <SimpleMediaCarousel
+              items={actionAnime.map(transformAnime)}
+              type="tv"
+              onItemClick={handleItemClick}
+              zoneId="anime-action"
+            />
+          </div>
+        )}
+
+        {/* Comedy Anime */}
+        {comedyAnime.length > 0 && (
+          <div className="space-y-6">
+            <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
+                Comedy Anime
+              </h2>
+            </div>
+            <SimpleMediaCarousel
+              items={comedyAnime.map(transformAnime)}
+              type="tv"
+              onItemClick={handleItemClick}
+              zoneId="anime-comedy"
+            />
+          </div>
+        )}
+
+        {/* Drama Anime */}
+        {dramaAnime.length > 0 && (
+          <div className="space-y-6">
+            <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
+                Drama Anime
+              </h2>
+            </div>
+            <SimpleMediaCarousel
+              items={dramaAnime.map(transformAnime)}
+              type="tv"
+              onItemClick={handleItemClick}
+              zoneId="anime-drama"
+            />
+          </div>
+        )}
+
+        {/* Sci-Fi & Fantasy Anime */}
+        {sciFiAnime.length > 0 && (
+          <div className="space-y-6">
+            <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
+                Sci-Fi & Fantasy Anime
+              </h2>
+            </div>
+            <SimpleMediaCarousel
+              items={sciFiAnime.map(transformAnime)}
+              type="tv"
+              onItemClick={handleItemClick}
+              zoneId="anime-scifi"
+            />
+          </div>
+        )}
+
+        {/* Mystery Anime */}
+        {mysteryAnime.length > 0 && (
+          <div className="space-y-6">
+            <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+              <h2 className="text-2xl md:text-3xl font-bold text-white">
+                Mystery Anime
+              </h2>
+            </div>
+            <SimpleMediaCarousel
+              items={mysteryAnime.map(transformAnime)}
+              type="tv"
+              onItemClick={handleItemClick}
+              zoneId="anime-mystery"
+            />
+          </div>
+        )}
+
+        {/* Popular Anime */}
+        <div className="space-y-6">
+          <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
+            <h2 className="text-2xl md:text-3xl font-bold text-white">
+              Popular Anime
+            </h2>
+          </div>
+          <SimpleMediaCarousel
+            items={popularAnime.slice(5, 25).map(transformAnime)}
+            type="tv"
+            onItemClick={handleItemClick}
+            zoneId="anime-popular"
           />
         </div>
 
@@ -203,7 +298,7 @@ export default function AnimePage() {
             </h2>
           </div>
           <SimpleMediaCarousel
-            items={popularAnime?.slice(10, 25).map(transformAnime) || []}
+            items={popularAnime.slice(10, 25).map(transformAnime)}
             type="tv"
             onItemClick={handleItemClick}
             zoneId="anime-recommended"

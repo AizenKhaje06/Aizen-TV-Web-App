@@ -15,7 +15,6 @@ import {
 } from '@/hooks/tmdb/use-movies';
 import { useResponsivePadding } from '@/hooks/use-responsive-padding';
 import { getBackdropUrl, getPosterUrl, getLogoUrl } from '@/services/tmdb/images';
-import { ZONES } from '@/lib/navigation/zones';
 
 export default function MoviesPage() {
   const router = useRouter();

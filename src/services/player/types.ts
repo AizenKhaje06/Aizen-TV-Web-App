@@ -12,6 +12,7 @@ export interface VideoProvider {
 export interface PlayerConfig {
   autoplay?: boolean;
   allowFullscreen?: boolean;
+  autoFullscreen?: boolean;
   allowedFeatures?: string[];
 }
 
@@ -64,6 +65,7 @@ export interface WatchHistoryItem {
 export const DEFAULT_PLAYER_CONFIG: PlayerConfig = {
   autoplay: true,
   allowFullscreen: true,
+  autoFullscreen: true,
   allowedFeatures: [
     'accelerometer',
     'autoplay',

@@ -26,27 +26,27 @@ import { formatDate } from '@/lib/utils';
 import { useUserStore } from '@/store/user-store';
 import { useResponsivePadding } from '@/hooks/use-responsive-padding';
 
-export default function AnimeDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+export default function TVDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const resolvedParams = React.use(params);
-  const animeId = parseInt(resolvedParams.id);
+  const tvId = parseInt(resolvedParams.id);
   const padding = useResponsivePadding();
   
-  const { data: anime, isLoading: loadingAnime, error, refetch } = useTVDetails(animeId);
-  const { data: credits } = useTVCredits(animeId);
-  const { data: recommendations } = useTVRecommendations(animeId);
-  const { data: similarShows } = useSimilarTV(animeId);
-  const { data: images } = useTVImages(animeId);
-  const { data: videos } = useTVVideos(animeId);
+  const { data: tvShow, isLoading: loadingTV, error, refetch } = useTVDetails(tvId);
+  const { data: credits } = useTVCredits(tvId);
+  const { data: recommendations } = useTVRecommendations(tvId);
+  const { data: similarShows } = useSimilarTV(tvId);
+  const { data: images } = useTVImages(tvId);
+  const { data: videos } = useTVVideos(tvId);
   
   // State for selected season
   const [selectedSeasonNumber, setSelectedSeasonNumber] = React.useState(1);
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [selectedTrailer, setSelectedTrailer] = React.useState<string | null>(null);
-  const { data: seasonDetails } = useSeasonDetails(animeId, selectedSeasonNumber);
+  const { data: seasonDetails } = useSeasonDetails(tvId, selectedSeasonNumber);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
   
-  const isFavorite = useUserStore((state) => state.isFavorite(animeId));
+  const isFavorite = useUserStore((state) => state.isFavorite(tvId));
   const addFavorite = useUserStore((state) => state.addFavorite);
   const removeFavorite = useUserStore((state) => state.removeFavorite);
 
@@ -62,26 +62,26 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
   }, []);
 
   const handlePlay = () => {
-    // Play first episode of first season for anime
-    router.push(`/watch/anime/${animeId}/1/1`);
+    // Play first episode of first season
+    router.push(`/watch/tv/${resolvedParams.id}/1/1`);
   };
 
   const toggleFavorite = () => {
     if (isFavorite) {
-      removeFavorite(animeId);
-    } else if (anime) {
+      removeFavorite(tvId);
+    } else if (tvShow) {
       addFavorite({
-        id: anime.id,
+        id: tvShow.id,
         type: 'tv',
-        title: anime.name,
-        posterPath: anime.poster_path,
-        backdropPath: anime.backdrop_path,
+        title: tvShow.name,
+        posterPath: tvShow.poster_path,
+        backdropPath: tvShow.backdrop_path,
         addedAt: Date.now(),
       });
     }
   };
 
-  if (loadingAnime || !anime) {
+  if (loadingTV || !tvShow) {
     return <LoadingScreen />;
   }
 
@@ -90,14 +90,14 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
       <AppShell>
         <ApiError
           error={error as Error}
-          message="Failed to load anime details"
+          message="Failed to load TV show details"
           onRetry={() => refetch()}
         />
       </AppShell>
     );
   }
 
-  const transformAnime = (show: any) => {
+  const transformTV = (show: any) => {
     const posterUrl = getPosterUrl(show.poster_path);
     return {
       id: show.id,
@@ -120,7 +120,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
   ) || videos?.results?.find((video: any) => video.site === 'YouTube');
 
   // Get creator
-  const creator = anime.created_by && anime.created_by.length > 0 ? anime.created_by[0] : null;
+  const creator = tvShow.created_by && tvShow.created_by.length > 0 ? tvShow.created_by[0] : null;
 
   // Get top cast (first 12)
   const topCast = credits?.cast?.slice(0, 12) || [];
@@ -130,10 +130,10 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
       {/* Combined Hero Banner Section */}
       <div className="relative w-full min-h-screen">
         {/* Backdrop Image */}
-        {anime.backdrop_path && (
+        {tvShow.backdrop_path && (
           <Image
-            src={getBackdropUrl(anime.backdrop_path, 'original') || ''}
-            alt={anime.name}
+            src={getBackdropUrl(tvShow.backdrop_path, 'original') || ''}
+            alt={tvShow.name}
             fill
             priority
             className="object-cover"
@@ -159,7 +159,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
             >
               <Image
                 src={logoUrl}
-                alt={anime.name}
+                alt={tvShow.name}
                 fill
                 className="object-contain object-left"
               />
@@ -171,7 +171,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
               animate="visible"
               className="text-5xl md:text-7xl lg:text-8xl font-bold text-white max-w-4xl mb-6"
             >
-              {anime.name}
+              {tvShow.name}
             </motion.h1>
           )}
 
@@ -182,33 +182,33 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
             animate="visible"
             className="flex flex-wrap items-center gap-4 mb-2"
           >
-            <RatingBadge rating={anime.vote_average} size="lg" />
+            <RatingBadge rating={tvShow.vote_average} size="lg" />
             <span className="text-gray-200 text-lg font-medium">
-              {formatDate(anime.first_air_date, 'year')}
+              {formatDate(tvShow.first_air_date, 'year')}
             </span>
-            {anime.number_of_seasons && (
+            {tvShow.number_of_seasons && (
               <span className="text-gray-200 text-lg flex items-center gap-1">
                 <Tv className="w-4 h-4" />
-                {anime.number_of_seasons} {anime.number_of_seasons === 1 ? 'Season' : 'Seasons'}
+                {tvShow.number_of_seasons} {tvShow.number_of_seasons === 1 ? 'Season' : 'Seasons'}
               </span>
             )}
-            {anime.vote_count && (
+            {tvShow.vote_count && (
               <span className="text-gray-200 text-lg flex items-center gap-1">
                 <Users className="w-4 h-4" />
-                {anime.vote_count.toLocaleString()} votes
+                {tvShow.vote_count.toLocaleString()} votes
               </span>
             )}
           </motion.div>
 
           {/* Genres */}
-          {anime.genres && anime.genres.length > 0 && (
+          {tvShow.genres && tvShow.genres.length > 0 && (
             <motion.div
               variants={fadeInUpVariants}
               initial="hidden"
               animate="visible"
               className="flex flex-wrap gap-2 mb-4"
             >
-              {anime.genres.map((genre) => (
+              {tvShow.genres.map((genre) => (
                 <GenreBadge key={genre.id} genre={genre.name} />
               ))}
             </motion.div>
@@ -265,11 +265,11 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
           >
             <h2 className="text-2xl md:text-3xl font-bold text-white">Synopsis</h2>
             <p className="text-gray-300 text-base md:text-lg leading-relaxed">
-              {anime.overview}
+              {tvShow.overview}
             </p>
           </motion.div>
 
-          {/* Anime Info Grid - Compact Single Line */}
+          {/* TV Show Info Grid - Compact Single Line */}
           <motion.div
             variants={fadeInUpVariants}
             initial="hidden"
@@ -284,40 +284,40 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
               </div>
             )}
             
-            {anime.production_companies && anime.production_companies.length > 0 && (
+            {tvShow.production_companies && tvShow.production_companies.length > 0 && (
               <div className="space-y-0.5">
                 <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Production</h3>
                 <p className="text-xs text-white font-medium line-clamp-1">
-                  {anime.production_companies.slice(0, 2).map((c: any) => c.name).join(', ')}
+                  {tvShow.production_companies.slice(0, 2).map((c: any) => c.name).join(', ')}
                 </p>
               </div>
             )}
 
-            {anime.status && (
+            {tvShow.status && (
               <div className="space-y-0.5">
                 <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Status</h3>
-                <p className="text-xs text-white font-medium">{anime.status}</p>
+                <p className="text-xs text-white font-medium">{tvShow.status}</p>
               </div>
             )}
 
-            {anime.type && (
+            {tvShow.type && (
               <div className="space-y-0.5">
                 <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Type</h3>
-                <p className="text-xs text-white font-medium">{anime.type}</p>
+                <p className="text-xs text-white font-medium">{tvShow.type}</p>
               </div>
             )}
 
-            {anime.original_language && (
+            {tvShow.original_language && (
               <div className="space-y-0.5">
                 <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Language</h3>
-                <p className="text-xs text-white font-medium uppercase">{anime.original_language}</p>
+                <p className="text-xs text-white font-medium uppercase">{tvShow.original_language}</p>
               </div>
             )}
 
-            {anime.networks && anime.networks.length > 0 && (
+            {tvShow.networks && tvShow.networks.length > 0 && (
               <div className="space-y-0.5">
                 <h3 className="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Network</h3>
-                <p className="text-xs text-white font-medium line-clamp-1">{anime.networks[0].name}</p>
+                <p className="text-xs text-white font-medium line-clamp-1">{tvShow.networks[0].name}</p>
               </div>
             )}
           </motion.div>
@@ -361,7 +361,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
         </div>
       </div>
 
-      {/* Anime Details - MOVED UP */}
+      {/* TV Show Details - MOVED UP */}
       <motion.section
         variants={fadeInUpVariants}
         initial="hidden"
@@ -371,22 +371,22 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
         style={{ paddingLeft: padding.left, paddingRight: padding.right }}
       >
         <div className="space-y-4">
-          <h2 className="text-3xl font-bold text-white">Anime Details</h2>
+          <h2 className="text-3xl font-bold text-white">TV Show Details</h2>
           <div className="bg-white/5 backdrop-blur-sm rounded-lg p-6">
             <div className="flex flex-wrap items-start gap-x-8 gap-y-4">
               <div className="space-y-1">
                 <p className="text-xs text-gray-400">First Air Date</p>
                 <p className="text-sm text-white flex items-center gap-2">
                   <Calendar className="w-4 h-4" />
-                  {formatDate(anime.first_air_date)}
+                  {formatDate(tvShow.first_air_date)}
                 </p>
               </div>
-              {anime.last_air_date && (
+              {tvShow.last_air_date && (
                 <div className="space-y-1">
                   <p className="text-xs text-gray-400">Last Air Date</p>
                   <p className="text-sm text-white flex items-center gap-2">
                     <Calendar className="w-4 h-4" />
-                    {formatDate(anime.last_air_date)}
+                    {formatDate(tvShow.last_air_date)}
                   </p>
                 </div>
               )}
@@ -394,31 +394,31 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
                 <p className="text-xs text-gray-400">Rating</p>
                 <p className="text-sm text-white flex items-center gap-2">
                   <Star className="w-4 h-4 fill-yellow-500 text-yellow-500" />
-                  {anime.vote_average.toFixed(1)}/10 ({anime.vote_count?.toLocaleString()} votes)
+                  {tvShow.vote_average.toFixed(1)}/10 ({tvShow.vote_count?.toLocaleString()} votes)
                 </p>
               </div>
-              {anime.episode_run_time && anime.episode_run_time.length > 0 && (
+              {tvShow.episode_run_time && tvShow.episode_run_time.length > 0 && (
                 <div className="space-y-1">
                   <p className="text-xs text-gray-400">Episode Runtime</p>
                   <p className="text-sm text-white flex items-center gap-2">
                     <Clock className="w-4 h-4" />
-                    ~{anime.episode_run_time[0]} min
+                    ~{tvShow.episode_run_time[0]} min
                   </p>
                 </div>
               )}
-              {anime.production_countries && anime.production_countries.length > 0 && (
+              {tvShow.production_countries && tvShow.production_countries.length > 0 && (
                 <div className="space-y-1">
                   <p className="text-xs text-gray-400">Countries</p>
                   <p className="text-sm text-white">
-                    {anime.production_countries.map((c: any) => c.name).join(', ')}
+                    {tvShow.production_countries.map((c: any) => c.name).join(', ')}
                   </p>
                 </div>
               )}
-              {anime.number_of_episodes && (
+              {tvShow.number_of_episodes && (
                 <div className="space-y-1">
                   <p className="text-xs text-gray-400">Total Episodes</p>
                   <p className="text-sm text-white">
-                    {anime.number_of_episodes} Episodes
+                    {tvShow.number_of_episodes} Episodes
                   </p>
                 </div>
               )}
@@ -428,7 +428,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
       </motion.section>
 
       {/* Seasons & Episodes Section - MOVED DOWN, NO THUMBNAILS, WITH ARROW */}
-      {anime.seasons && anime.seasons.filter(s => s.season_number > 0).length > 0 && (
+      {tvShow.seasons && tvShow.seasons.filter(s => s.season_number > 0).length > 0 && (
         <motion.section
           variants={fadeInUpVariants}
           initial="hidden"
@@ -457,7 +457,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
                 {isDropdownOpen && (
                   <div className="absolute top-full right-0 mt-2 min-w-[240px] bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-700 shadow-2xl z-50 overflow-hidden max-h-[400px] overflow-y-auto">
                     {/* Include Specials (Season 0) if it exists */}
-                    {anime.seasons.find(s => s.season_number === 0) && (
+                    {tvShow.seasons.find(s => s.season_number === 0) && (
                       <button
                         onClick={() => {
                           setSelectedSeasonNumber(0);
@@ -471,12 +471,12 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
                       >
                         <div className="font-bold text-base">Specials</div>
                         <div className="text-sm text-gray-400 mt-0.5">
-                          {anime.seasons.find(s => s.season_number === 0)?.episode_count} Episodes
+                          {tvShow.seasons.find(s => s.season_number === 0)?.episode_count} Episodes
                         </div>
                       </button>
                     )}
                     {/* Regular seasons */}
-                    {anime.seasons.filter(s => s.season_number > 0).map((season: any) => (
+                    {tvShow.seasons.filter(s => s.season_number > 0).map((season: any) => (
                       <button
                         key={season.id}
                         onClick={() => {
@@ -530,7 +530,7 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
                       {/* Episode Card with Thumbnail - Clickable */}
                       <div
                         className="cursor-pointer group/card"
-                        onClick={() => router.push(`/watch/anime/${animeId}/${selectedSeasonNumber}/${episode.episode_number}`)}
+                        onClick={() => router.push(`/watch/tv/${tvId}/${selectedSeasonNumber}/${episode.episode_number}`)}
                       >
                         {/* Thumbnail with badges */}
                         <div className="relative aspect-video rounded-md overflow-hidden bg-gray-800 group-hover/card:ring-2 group-hover/card:ring-cyan-400 transition-all">
@@ -640,18 +640,18 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
         </motion.section>
       )}
 
-      {/* Similar Animes */}
+      {/* Similar TV Shows */}
       {similarShows && similarShows.length > 0 && (
         <div className="pb-8 md:pb-12">
           <div className="space-y-6">
             <div style={{ paddingLeft: padding.left, paddingRight: padding.right }}>
-              <h2 className="text-3xl font-bold text-white">Similar Animes</h2>
+              <h2 className="text-3xl font-bold text-white">Similar TV Shows</h2>
             </div>
             <SimpleMediaCarousel
-              items={similarShows.map(transformAnime)}
+              items={similarShows.map(transformTV)}
               type="tv"
-              onItemClick={(id) => router.push(`/anime/${id}`)}
-              zoneId="anime-details-similar"
+              onItemClick={(id) => router.push(`/tv/${id}`)}
+              zoneId="tv-details-similar"
             />
           </div>
         </div>
@@ -665,10 +665,10 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
               <h2 className="text-3xl font-bold text-white">More Like This</h2>
             </div>
             <SimpleMediaCarousel
-              items={recommendations.map(transformAnime)}
+              items={recommendations.map(transformTV)}
               type="tv"
-              onItemClick={(id) => router.push(`/anime/${id}`)}
-              zoneId="anime-details-recommendations"
+              onItemClick={(id) => router.push(`/tv/${id}`)}
+              zoneId="tv-details-recommendations"
             />
           </div>
         </div>

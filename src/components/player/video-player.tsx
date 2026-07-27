@@ -6,6 +6,7 @@ import { PlayerFrame } from './player-frame';
 import { PlayerControls } from './player-controls';
 import { usePlayerStoreV2 } from '@/store/player-store-v2';
 import { useHistoryStore } from '@/store/history-store';
+import { getPlayerConfig } from '@/services/player/player-builder';
 import { cn } from '@/lib/cn';
 
 interface VideoPlayerProps {
@@ -19,6 +20,9 @@ export function VideoPlayer({ source, className = '' }: VideoPlayerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const hideControlsTimer = useRef<NodeJS.Timeout>();
+  const autoFullscreenTriggered = useRef(false);
+  
+  const config = getPlayerConfig();
   
   // Use selectors to get only what we need
   const isPaused = usePlayerStoreV2((state) => state.isPaused);
@@ -145,6 +149,20 @@ export function VideoPlayer({ source, className = '' }: VideoPlayerProps) {
   const handlePlayerLoad = () => {
     setLoading(false);
     play();
+    
+    // Auto-trigger fullscreen after player loads (if enabled in config)
+    if (config.autoFullscreen && !autoFullscreenTriggered.current && containerRef.current) {
+      autoFullscreenTriggered.current = true;
+      // Small delay to ensure player is ready
+      setTimeout(() => {
+        if (containerRef.current && !document.fullscreenElement) {
+          containerRef.current.requestFullscreen().catch((err) => {
+            // Fullscreen request failed (usually due to browser policy)
+            console.log('Auto-fullscreen failed:', err.message);
+          });
+        }
+      }, 500);
+    }
   };
 
   const handlePlayerError = (error: string) => {

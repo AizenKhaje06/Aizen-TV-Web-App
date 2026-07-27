@@ -1,23 +1,28 @@
 /**
  * Player builder for creating video sources
+ * - Uses CineSrc for movies (with autoplay and English subtitles)
+ * - Uses VidSuper for TV shows/anime episodes (with all features)
  */
 
 import { VideoSource, PlayerConfig, DEFAULT_PLAYER_CONFIG } from './types';
 import { providerRegistry } from './providers';
-import { cinesrcProvider } from './vidsrc';
+import { cinesrcProvider, vsembedProvider, twoembedProvider, vidsuperProvider } from './vidsrc';
 
-// Register CineSrc as default provider
+// Register all providers
 providerRegistry.register(cinesrcProvider);
+providerRegistry.register(vsembedProvider);
+providerRegistry.register(twoembedProvider);
+providerRegistry.register(vidsuperProvider);
 
 /**
  * Build video source for a movie
+ * Uses VidSuper provider with autoplay and features
  */
 export function buildMovieSource(
   tmdbId: number,
   title: string
 ): VideoSource {
-  const provider = providerRegistry.getActive();
-  const url = provider.getMovieUrl(tmdbId);
+  const url = vidsuperProvider.getMovieUrl(tmdbId);
 
   return {
     url,
@@ -29,6 +34,7 @@ export function buildMovieSource(
 
 /**
  * Build video source for a TV episode
+ * Uses VidSuper provider with all features
  */
 export function buildEpisodeSource(
   tmdbId: number,
@@ -36,8 +42,7 @@ export function buildEpisodeSource(
   episode: number,
   title: string
 ): VideoSource {
-  const provider = providerRegistry.getActive();
-  const url = provider.getEpisodeUrl(tmdbId, season, episode);
+  const url = vidsuperProvider.getEpisodeUrl(tmdbId, season, episode);
 
   return {
     url,
@@ -61,6 +66,7 @@ export function getPlayerConfig(overrides?: Partial<PlayerConfig>): PlayerConfig
 
 /**
  * Generate iframe sandbox attributes
+ * Balanced security - allows player functionality while restricting dangerous operations
  */
 export function getIframeSandbox(): string {
   return [
@@ -69,7 +75,7 @@ export function getIframeSandbox(): string {
     'allow-presentation',
     'allow-forms',
     'allow-popups',
-    'allow-popups-to-escape-sandbox',
+    'allow-modals',
   ].join(' ');
 }
 

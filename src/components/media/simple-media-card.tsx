@@ -31,7 +31,7 @@ const GENRE_MAP: Record<number, string> = {
 interface SimpleMediaCardProps {
   id: number;
   title: string;
-  posterPath: string;
+  posterPath: string | null;
   voteAverage?: number;
   type?: 'movie' | 'tv';
   releaseDate?: string;

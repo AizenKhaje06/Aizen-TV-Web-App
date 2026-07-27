@@ -26,18 +26,18 @@ interface SeasonWithEpisodes {
   episodes?: Episode[];
 }
 
-export default function WatchTVPage({
+export default function WatchAnimePage({
   params,
 }: {
   params: Promise<{ id: string; season: string; episode: string }>;
 }) {
   const router = useRouter();
   const resolvedParams = React.use(params);
-  const tvId = parseInt(resolvedParams.id);
+  const animeId = parseInt(resolvedParams.id);
   const seasonNumber = parseInt(resolvedParams.season);
   const episodeNumber = parseInt(resolvedParams.episode);
 
-  const { data: tvShow, isLoading, error, refetch } = useTVDetails(tvId);
+  const { data: anime, isLoading, error, refetch } = useTVDetails(animeId);
   const [seasons, setSeasons] = useState<SeasonWithEpisodes[]>([]);
   const [currentEpisode, setCurrentEpisode] = useState<Episode | null>(null);
   const [loadingEpisodes, setLoadingEpisodes] = useState(true);
@@ -46,17 +46,17 @@ export default function WatchTVPage({
 
   // Fetch season details with episodes
   useEffect(() => {
-    if (!tvShow) return;
+    if (!anime) return;
 
     const fetchSeasonDetails = async () => {
       setLoadingEpisodes(true);
       try {
         const seasonsWithEpisodes = await Promise.all(
-          (tvShow.seasons || []).map(async (season) => {
+          (anime.seasons || []).map(async (season) => {
             if (season.season_number === 0) return season as SeasonWithEpisodes; // Skip specials for now
             
             try {
-              const seasonData = await tvService.getSeasonDetails(tvId, season.season_number);
+              const seasonData = await tvService.getSeasonDetails(animeId, season.season_number);
               return {
                 season_number: season.season_number,
                 name: season.name,
@@ -87,18 +87,18 @@ export default function WatchTVPage({
     };
 
     fetchSeasonDetails();
-  }, [tvShow, tvId, seasonNumber, episodeNumber]);
+  }, [anime, animeId, seasonNumber, episodeNumber]);
 
   if (isLoading || loadingEpisodes) {
     return <LoadingScreen />;
   }
 
-  if (error || !tvShow) {
+  if (error || !anime) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <ApiError
           error={error as Error}
-          message="Failed to load TV show"
+          message="Failed to load anime"
           onRetry={() => refetch()}
         />
       </div>
@@ -107,11 +107,11 @@ export default function WatchTVPage({
 
   // Build video source
   const episodeTitle = currentEpisode
-    ? `${tvShow.name} - S${seasonNumber}E${episodeNumber}: ${currentEpisode.name}`
-    : `${tvShow.name} - S${seasonNumber}E${episodeNumber}`;
+    ? `${anime.name} - S${seasonNumber}E${episodeNumber}: ${currentEpisode.name}`
+    : `${anime.name} - S${seasonNumber}E${episodeNumber}`;
 
   const videoSource = buildEpisodeSource(
-    tvShow.id,
+    anime.id,
     seasonNumber,
     episodeNumber,
     episodeTitle
@@ -130,12 +130,12 @@ export default function WatchTVPage({
 
     if (nextEpisode) {
       // Play next episode in same season
-      router.push(`/watch/tv/${tvId}/${seasonNumber}/${nextEpisode.episode_number}`);
+      router.push(`/watch/anime/${animeId}/${seasonNumber}/${nextEpisode.episode_number}`);
     } else {
       // Try next season
       const nextSeason = seasons.find((s) => s.season_number === seasonNumber + 1);
       if (nextSeason && nextSeason.episodes && nextSeason.episodes.length > 0) {
-        router.push(`/watch/tv/${tvId}/${nextSeason.season_number}/1`);
+        router.push(`/watch/anime/${animeId}/${nextSeason.season_number}/1`);
       }
     }
   };

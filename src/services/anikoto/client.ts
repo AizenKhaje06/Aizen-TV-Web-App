@@ -5,10 +5,6 @@
 
 const ANIKOTO_API_URL = 'https://anikotoapi.site';
 
-interface AnikotoResponse<T> {
-  data: T;
-}
-
 /**
  * Fetch from Anikoto API
  */

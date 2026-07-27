@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import { VideoPlayer } from '@/components/player/video-player';
 import { LoadingScreen } from '@/components/common/loading-spinner';
 import { ApiError } from '@/components/common/api-error';
-import { VideoSource } from '@/services/player/types';
-import { useAnimeDetails } from '@/hooks/anilist/use-anime';
+import { buildMovieSource } from '@/services/player/player-builder';
+import { useTVDetails } from '@/hooks/tmdb/use-tv';
 
 export default function WatchAnimeMoviePage({ 
   params 
@@ -17,7 +17,7 @@ export default function WatchAnimeMoviePage({
   const resolvedParams = React.use(params);
   const animeId = parseInt(resolvedParams.id);
 
-  const { data: anime, isLoading, error, refetch } = useAnimeDetails(animeId);
+  const { data: anime, isLoading, error, refetch } = useTVDetails(animeId);
 
   if (isLoading) {
     return <LoadingScreen />;
@@ -35,17 +35,11 @@ export default function WatchAnimeMoviePage({
     );
   }
 
-  const title = anime.title?.english || anime.title?.romaji || anime.title?.native || '';
+  const title = anime.name || anime.original_name || '';
   
-  // Build MegaPlay.buzz video source using AniList ID
-  // For movies, use episode 1
-  // Format: https://megaplay.buzz/stream/ani/{anilist-id}/{ep-num}/{language}
-  const videoSource: VideoSource = {
-    url: `https://megaplay.buzz/stream/ani/${animeId}/1/sub`,
-    type: 'movie',
-    tmdbId: animeId,
-    title: title,
-  };
+  // Build video source using TMDB ID + CineSrc
+  // Format: https://cinesrc.st/embed/movie/{tmdb_id}
+  const videoSource = buildMovieSource(anime.id, title);
 
   const handleMovieEnd = () => {
     // Navigate back to anime details

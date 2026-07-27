@@ -35,15 +35,11 @@ export function PlayerFrame({ source, onLoad, onError, className = '' }: PlayerF
     setHasError(false);
     setErrorMessage('');
 
-    // Set timeout for loading
+    // Auto-hide loading after a short delay (iframe onLoad is unreliable with external sources)
     const timeout = setTimeout(() => {
       setIsLoading(false);
-      setHasError(true);
-      setErrorMessage('Player took too long to load');
-      if (onErrorRef.current) {
-        onErrorRef.current('Timeout loading player');
-      }
-    }, 30000); // 30 second timeout
+      // Don't set error automatically - let actual errors trigger it
+    }, 3000); // Just hide loading spinner after 3 seconds
 
     return () => clearTimeout(timeout);
   }, [source.url]); // Only depend on source.url
@@ -99,6 +95,7 @@ export function PlayerFrame({ source, onLoad, onError, className = '' }: PlayerF
         allow={getIframeAllow(config)}
         sandbox={getIframeSandbox()}
         allowFullScreen={config.allowFullscreen}
+        referrerPolicy="origin"
         onLoad={handleLoad}
         onError={handleError}
         title={`Playing ${source.title}`}

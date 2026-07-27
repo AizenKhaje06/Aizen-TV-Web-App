@@ -4,7 +4,6 @@
  */
 
 import { tmdbClient } from '../tmdb/client';
-import { TVShow, SeasonDetails } from '@/types/media.types';
 
 interface TMDBMatch {
   tmdbId: number;
@@ -91,12 +90,15 @@ export async function findTMDBMatch(
         if (confidence === 'low') finalConfidence = 'medium';
       }
 
+      // Helper to compare confidence levels
+      const confidenceScore = (conf: 'high' | 'medium' | 'low'): number => {
+        if (conf === 'high') return 3;
+        if (conf === 'medium') return 2;
+        return 1;
+      };
+
       // Keep the best match
-      if (
-        !bestMatch ||
-        (finalConfidence === 'high' && bestConfidence !== 'high') ||
-        (finalConfidence === 'medium' && bestConfidence === 'low')
-      ) {
+      if (!bestMatch || confidenceScore(finalConfidence) > confidenceScore(bestConfidence)) {
         bestMatch = {
           tmdbId: show.id,
           name: show.name,
