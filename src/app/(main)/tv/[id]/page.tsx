@@ -447,7 +447,7 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="flex items-center justify-between min-w-[240px] bg-gray-700/90 text-white rounded-lg px-5 py-3 text-base font-semibold hover:bg-gray-600/90 transition-colors border border-gray-600"
                 >
-                  <span>Season {selectedSeasonNumber}</span>
+                  <span>{selectedSeasonNumber === 0 ? 'Specials' : `Season ${selectedSeasonNumber}`}</span>
                   <svg className="w-5 h-5 text-white ml-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
@@ -455,7 +455,27 @@ export default function TVDetailsPage({ params }: { params: Promise<{ id: string
                 
                 {/* Dropdown Menu */}
                 {isDropdownOpen && (
-                  <div className="absolute top-full right-0 mt-2 min-w-[240px] bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-700 shadow-2xl z-50 overflow-hidden">
+                  <div className="absolute top-full right-0 mt-2 min-w-[240px] bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-700 shadow-2xl z-50 overflow-hidden max-h-[400px] overflow-y-auto">
+                    {/* Include Specials (Season 0) if it exists */}
+                    {tvShow.seasons.find(s => s.season_number === 0) && (
+                      <button
+                        onClick={() => {
+                          setSelectedSeasonNumber(0);
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full text-left px-5 py-3 transition-colors ${
+                          selectedSeasonNumber === 0
+                            ? 'bg-red-600 text-white font-bold'
+                            : 'text-gray-300 hover:bg-gray-700/80'
+                        }`}
+                      >
+                        <div className="font-bold text-base">Specials</div>
+                        <div className="text-sm text-gray-400 mt-0.5">
+                          {tvShow.seasons.find(s => s.season_number === 0)?.episode_count} Episodes
+                        </div>
+                      </button>
+                    )}
+                    {/* Regular seasons */}
                     {tvShow.seasons.filter(s => s.season_number > 0).map((season: any) => (
                       <button
                         key={season.id}

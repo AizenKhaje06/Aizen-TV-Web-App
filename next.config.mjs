@@ -16,11 +16,6 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 's4.anilist.co',
-        pathname: '/file/**',
-      },
-      {
-        protocol: 'https',
         hostname: 'img.youtube.com',
         pathname: '/vi/**',
       },
@@ -28,11 +23,6 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'i.ytimg.com',
         pathname: '/vi/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'anikotoapi.site',
-        pathname: '/**',
       },
     ],
     formats: ['image/avif', 'image/webp'],
@@ -80,7 +70,7 @@ const nextConfig = {
         headers: [
           {
             key: 'Content-Security-Policy',
-            value: "frame-src 'self' https://megaplay.buzz https://vidsrc.xyz https://vidsrc.pro https://vidsrc.me https://vidsrc.to; script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+            value: "frame-src 'self' https://moviesapi.to; script-src 'self' 'unsafe-inline' 'unsafe-eval';",
           },
         ],
       },
@@ -107,17 +97,6 @@ const pwaConfig = withPWA({
       },
     },
     {
-      urlPattern: /^https:\/\/s4\.anilist\.co\/.*/i,
-      handler: 'CacheFirst',
-      options: {
-        cacheName: 'anilist-images',
-        expiration: {
-          maxEntries: 64,
-          maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
-        },
-      },
-    },
-    {
       urlPattern: /^https:\/\/(img|i)\.youtube\.com\/.*/i,
       handler: 'CacheFirst',
       options: {
@@ -133,18 +112,6 @@ const pwaConfig = withPWA({
       handler: 'NetworkFirst',
       options: {
         cacheName: 'tmdb-api',
-        networkTimeoutSeconds: 10,
-        expiration: {
-          maxEntries: 32,
-          maxAgeSeconds: 24 * 60 * 60, // 1 day
-        },
-      },
-    },
-    {
-      urlPattern: /^https:\/\/graphql\.anilist\.co\/.*/i,
-      handler: 'NetworkFirst',
-      options: {
-        cacheName: 'anilist-api',
         networkTimeoutSeconds: 10,
         expiration: {
           maxEntries: 32,

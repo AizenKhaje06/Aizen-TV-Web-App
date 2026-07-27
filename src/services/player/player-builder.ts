@@ -4,10 +4,10 @@
 
 import { VideoSource, PlayerConfig, DEFAULT_PLAYER_CONFIG } from './types';
 import { providerRegistry } from './providers';
-import { vidSrcProvider } from './vidsrc';
+import { moviesAPIProvider } from './vidsrc';
 
-// Register VidSrc as default provider
-providerRegistry.register(vidSrcProvider);
+// Register MoviesAPI as default provider
+providerRegistry.register(moviesAPIProvider);
 
 /**
  * Build video source for a movie

@@ -26,7 +26,6 @@ export default function AnimeDetailsPage({ params }: { params: Promise<{ id: str
   const { data: anime, isLoading, error, refetch } = useAnimeDetails(animeId);
   const { data: groupedAnime } = useGroupedAnime(animeId);
   
-  const [selectedEpisode, setSelectedEpisode] = React.useState(1);
   const [selectedSeasonIndex, setSelectedSeasonIndex] = React.useState(0);
   const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const [episodeDetails, setEpisodeDetails] = React.useState<Map<number, TMDBEpisodeDetails>>(new Map());
