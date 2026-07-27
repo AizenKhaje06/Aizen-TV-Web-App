@@ -19,6 +19,7 @@ export function PlayerFrame({ source, onLoad, onError, className = '' }: PlayerF
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const [showOverlay, setShowOverlay] = useState(true);
   const onErrorRef = useRef(onError);
   const onLoadRef = useRef(onLoad);
 
@@ -34,6 +35,7 @@ export function PlayerFrame({ source, onLoad, onError, className = '' }: PlayerF
     setIsLoading(true);
     setHasError(false);
     setErrorMessage('');
+    setShowOverlay(true); // Show overlay on new video
 
     // Auto-hide loading after a short delay (iframe onLoad is unreliable with external sources)
     const timeout = setTimeout(() => {
@@ -43,6 +45,17 @@ export function PlayerFrame({ source, onLoad, onError, className = '' }: PlayerF
 
     return () => clearTimeout(timeout);
   }, [source.url]); // Only depend on source.url
+
+  // Click protection: Allow first click (for play button), then show overlay briefly
+  const handleOverlayClick = () => {
+    // Hide overlay to allow click to reach iframe
+    setShowOverlay(false);
+    
+    // Show overlay again after a short delay to block popups
+    setTimeout(() => {
+      setShowOverlay(true);
+    }, 100);
+  };
 
   const handleLoad = () => {
     setIsLoading(false);
@@ -101,6 +114,20 @@ export function PlayerFrame({ source, onLoad, onError, className = '' }: PlayerF
         title={`Playing ${source.title}`}
         style={{ display: hasError ? 'none' : 'block' }}
       />
+
+      {/* Click Protection Overlay - Blocks ad popups while allowing player clicks */}
+      {showOverlay && !isLoading && !hasError && (
+        <div
+          className="absolute inset-0 z-10"
+          style={{ 
+            pointerEvents: 'auto',
+            background: 'transparent',
+            cursor: 'pointer'
+          }}
+          onClick={handleOverlayClick}
+          title="Click to play"
+        />
+      )}
     </div>
   );
 }
