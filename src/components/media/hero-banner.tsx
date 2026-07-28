@@ -176,7 +176,7 @@ export function HeroBanner({
             <Focusable
               id="hero-more-info-button"
               zoneId={ZONES.HERO}
-              zonePriority=90}
+              zonePriority={90}
               navigationRules={{
                 left: 'hero-play-button',
                 right: 'hero-mute-button',
