@@ -22,34 +22,29 @@ interface TVFocusProviderProps {
 
 export function TVFocusProvider({ children, enabled = true }: TVFocusProviderProps) {
   const [isTVMode, setIsTVMode] = useState(false);
-  const [isClient, setIsClient] = useState(false);
   const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(null);
   const [focusableElements] = useState<Set<HTMLElement>>(new Set());
   const setStoreTVMode = useSettingsStore((state) => state.setTVMode);
 
-  // Set client-side flag
+  // Detect TV mode on client mount
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  // Detect TV mode on client
-  useEffect(() => {
-    if (!isClient) return;
-
     // Check for manual override in localStorage (for testing)
     let isTV = false;
-    const override = localStorage.getItem('tv-mode-override');
     
-    if (override === 'true') {
-      isTV = true;
-      console.log('[TVFocusProvider] TV mode override detected: true');
-    } else if (override === 'false') {
-      isTV = false;
-      console.log('[TVFocusProvider] TV mode override detected: false');
-    } else {
-      // Auto-detect based on device
-      isTV = enabled && shouldUseTVMode();
-      console.log('[TVFocusProvider] Auto-detect TV mode:', isTV);
+    if (typeof window !== 'undefined') {
+      const override = localStorage.getItem('tv-mode-override');
+      
+      if (override === 'true') {
+        isTV = true;
+        console.log('[TVFocusProvider] TV mode override detected: true');
+      } else if (override === 'false') {
+        isTV = false;
+        console.log('[TVFocusProvider] TV mode override detected: false');
+      } else {
+        // Auto-detect based on device
+        isTV = enabled && shouldUseTVMode();
+        console.log('[TVFocusProvider] Auto-detect TV mode:', isTV);
+      }
     }
     
     setIsTVMode(isTV);
@@ -73,9 +68,10 @@ export function TVFocusProvider({ children, enabled = true }: TVFocusProviderPro
         stopRemoteControl();
         document.body.classList.remove('tv-mode');
         document.body.style.userSelect = '';
+        console.log('[TVFocusProvider] TV mode cleanup - remote control stopped');
       }
     };
-  }, [isClient, enabled, setStoreTVMode]);
+  }, [enabled, setStoreTVMode]);
 
   // Track focused element
   useEffect(() => {
