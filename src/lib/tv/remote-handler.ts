@@ -69,6 +69,8 @@ class RemoteControlManager {
 
     if (!remoteKey) return;
 
+    console.log('[RemoteControl] Key pressed:', event.key, '-> Remote key:', remoteKey);
+
     // Create remote event
     const remoteEvent: RemoteEvent = {
       key: remoteKey,
@@ -118,7 +120,9 @@ class RemoteControlManager {
     const direction = directionMap[key];
 
     if (direction) {
+      console.log('[RemoteControl] Attempting to move focus:', direction);
       const moved = moveFocus(direction);
+      console.log('[RemoteControl] Focus moved:', moved);
       if (moved) {
         event.preventDefault();
       }
@@ -133,6 +137,7 @@ class RemoteControlManager {
 
     window.addEventListener('keydown', this.handleKeyDown);
     this.isListening = true;
+    console.log('[RemoteControl] Remote control system started - listening for arrow keys');
   }
 
   /**

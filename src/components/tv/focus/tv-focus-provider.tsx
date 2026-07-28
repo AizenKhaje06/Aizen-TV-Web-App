@@ -28,7 +28,19 @@ export function TVFocusProvider({ children, enabled = true }: TVFocusProviderPro
 
   // Detect TV mode on mount
   useEffect(() => {
-    const isTV = enabled && shouldUseTVMode();
+    // Check for manual override in localStorage (for testing)
+    let isTV = false;
+    const override = typeof window !== 'undefined' ? localStorage.getItem('tv-mode-override') : null;
+    
+    if (override === 'true') {
+      isTV = true;
+    } else if (override === 'false') {
+      isTV = false;
+    } else {
+      // Auto-detect based on device
+      isTV = enabled && shouldUseTVMode();
+    }
+    
     setIsTVMode(isTV);
     setStoreTVMode(isTV);
 
@@ -39,6 +51,10 @@ export function TVFocusProvider({ children, enabled = true }: TVFocusProviderPro
       // Add TV mode class to body
       document.body.classList.add('tv-mode');
       document.body.style.userSelect = 'none';
+
+      console.log('[TVFocusProvider] TV mode enabled - remote control started');
+    } else {
+      console.log('[TVFocusProvider] TV mode disabled');
     }
 
     return () => {

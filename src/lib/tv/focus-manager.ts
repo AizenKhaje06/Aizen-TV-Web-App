@@ -163,11 +163,15 @@ export function findNextFocusableElement(
 export function moveFocus(direction: FocusDirection, container?: HTMLElement): boolean {
   const current = document.activeElement as HTMLElement;
 
+  console.log('[FocusManager] moveFocus called - direction:', direction, 'current:', current?.id || current?.className);
+
   if (!current) {
     // No element focused, focus first focusable element
     const elements = getFocusableElements(container);
+    console.log('[FocusManager] No current focus, found', elements.length, 'focusable elements');
     if (elements.length > 0) {
       elements[0].focus();
+      console.log('[FocusManager] Focused first element:', elements[0].id || elements[0].className);
       return true;
     }
     return false;
@@ -176,6 +180,7 @@ export function moveFocus(direction: FocusDirection, container?: HTMLElement): b
   const next = findNextFocusableElement(current, direction, container);
 
   if (next) {
+    console.log('[FocusManager] Moving focus to:', next.id || next.className);
     next.focus();
     focusHistory.push(next);
 
@@ -189,6 +194,7 @@ export function moveFocus(direction: FocusDirection, container?: HTMLElement): b
     return true;
   }
 
+  console.log('[FocusManager] No next element found in direction:', direction);
   return false;
 }
 
