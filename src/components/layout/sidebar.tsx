@@ -18,27 +18,26 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/cn';
 import { useTVMode } from '@/hooks/use-tv-mode';
+import { Focusable } from '@/components/navigation/focusable';
+import { ZONES } from '@/lib/navigation/zones';
 
 const navigation = [
-  { name: 'Home', href: '/', icon: Home },
-  { name: 'Movies', href: '/movies', icon: Film },
-  { name: 'TV Shows', href: '/tv', icon: Tv },
-  { name: 'Kids', href: '/kids', icon: Baby },
-  { name: 'Anime', href: '/anime', icon: Sparkles },
-  { name: 'Live TV', href: '/live', icon: Radio },
-  { name: 'My Playlist', href: '/favorites', icon: List },
+  { name: 'Home', href: '/', icon: Home, id: 'sidebar-home' },
+  { name: 'Movies', href: '/movies', icon: Film, id: 'sidebar-movies' },
+  { name: 'TV Shows', href: '/tv', icon: Tv, id: 'sidebar-tv' },
+  { name: 'Kids', href: '/kids', icon: Baby, id: 'sidebar-kids' },
+  { name: 'Anime', href: '/anime', icon: Sparkles, id: 'sidebar-anime' },
+  { name: 'Live TV', href: '/live', icon: Radio, id: 'sidebar-live' },
+  { name: 'My Playlist', href: '/favorites', icon: List, id: 'sidebar-favorites' },
 ];
 
 export function Sidebar() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [focusedIndex, setFocusedIndex] = useState(-1); // -1 = search, 0-6 = nav items
   const pathname = usePathname();
   const router = useRouter();
-  const { isTVMode } = useTVMode(); // Extract isTVMode from the returned object
-  const navRefs = useRef<(HTMLAnchorElement | null)[]>([]);
-  const searchRef = useRef<HTMLButtonElement>(null);
+  const { isTVMode } = useTVMode();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,112 +96,6 @@ export function Sidebar() {
       window.removeEventListener('orientationchange', handleResize);
     };
   }, [isTVMode, isExpanded]);
-
-  // TV Mode: Keyboard navigation for D-pad
-  useEffect(() => {
-    if (!isTVMode) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      const activeElement = document.activeElement;
-      const isSidebarFocused = activeElement?.closest('aside') !== null;
-      const isMainContentFocused = activeElement?.closest('main') !== null;
-
-      // Arrow Left: Return to sidebar from main content
-      if (e.key === 'ArrowLeft' && isMainContentFocused) {
-        e.preventDefault();
-        setFocusedIndex(0); // Focus first item (Home)
-        return;
-      }
-
-      // Only handle other keys if sidebar has focus
-      if (!isSidebarFocused && focusedIndex < -1) return;
-
-      switch (e.key) {
-        case 'ArrowUp':
-          e.preventDefault();
-          setFocusedIndex((prev) => {
-            const newIndex = prev <= -1 ? navigation.length - 1 : prev - 1;
-            return newIndex;
-          });
-          break;
-
-        case 'ArrowDown':
-          e.preventDefault();
-          setFocusedIndex((prev) => {
-            const newIndex = prev >= navigation.length - 1 ? -1 : prev + 1;
-            return newIndex;
-          });
-          break;
-
-        case 'Enter':
-          e.preventDefault();
-          if (focusedIndex === -1) {
-            // Search button
-            setShowSearch(true);
-          } else if (focusedIndex >= 0 && focusedIndex < navigation.length) {
-            // Navigate to page
-            const navItem = navigation[focusedIndex];
-            router.push(navItem.href);
-          }
-          break;
-
-        case 'ArrowRight':
-          // Move focus out of sidebar to main content
-          e.preventDefault();
-          
-          // Find first focusable element in main content
-          const mainContent = document.querySelector('main');
-          
-          // Try to find focusable elements with more specificity
-          const selectors = [
-            'a[href]',
-            'button:not([disabled])',
-            'input:not([disabled])',
-            '[tabindex="0"]',
-            '[tabindex]:not([tabindex="-1"])',
-          ];
-          
-          let firstFocusable: HTMLElement | null = null;
-          
-          for (const selector of selectors) {
-            const element = mainContent?.querySelector(selector) as HTMLElement;
-            if (element) {
-              firstFocusable = element;
-              break;
-            }
-          }
-          
-          if (firstFocusable) {
-            // Reset sidebar focus
-            setFocusedIndex(-100); // Use special value to indicate "not in sidebar"
-            firstFocusable.focus();
-            
-            // Log for debugging
-            console.log('Focused element:', firstFocusable);
-          } else {
-            console.log('No focusable element found in main content');
-          }
-          break;
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isTVMode, focusedIndex, router]);
-
-  // Auto-focus the focused item
-  useEffect(() => {
-    if (!isTVMode) return;
-    
-    // -100 = focus is in main content, don't auto-focus sidebar
-    if (focusedIndex === -100) return;
-
-    if (focusedIndex === -1 && searchRef.current) {
-      searchRef.current.focus();
-    } else if (focusedIndex >= 0 && navRefs.current[focusedIndex]) {
-      navRefs.current[focusedIndex]?.focus();
-    }
-  }, [focusedIndex, isTVMode]);
 
   return (
     <>
@@ -290,22 +183,30 @@ export function Sidebar() {
               </button>
             </form>
           ) : (
-            <button
-              ref={searchRef}
-              onClick={() => setShowSearch(true)}
-              className={cn(
-                'flex items-center space-x-3 w-full',
-                'text-gray-400 hover:text-white transition-colors',
-                'focus:outline-none focus:ring-2 focus:ring-primary rounded-lg',
-                isExpanded ? 'px-3 py-2' : 'justify-center py-2',
-                isTVMode && focusedIndex === -1 && 'ring-2 ring-primary bg-gray-900'
-              )}
+            <Focusable
+              id="sidebar-search"
+              zoneId={ZONES.SIDEBAR}
+              zonePriority={100}
+              navigationRules={{
+                right: ZONES.HERO,
+                down: 'sidebar-home',
+              }}
             >
-              <Search className="w-5 h-5 flex-shrink-0" />
-              {isExpanded && (
-                <span className="text-sm font-medium">Search</span>
-              )}
-            </button>
+              <button
+                onClick={() => setShowSearch(true)}
+                className={cn(
+                  'flex items-center space-x-3 w-full',
+                  'text-gray-400 hover:text-white transition-colors',
+                  'focus:outline-none focus:ring-2 focus:ring-primary rounded-lg',
+                  isExpanded ? 'px-3 py-2' : 'justify-center py-2'
+                )}
+              >
+                <Search className="w-5 h-5 flex-shrink-0" />
+                {isExpanded && (
+                  <span className="text-sm font-medium">Search</span>
+                )}
+              </button>
+            </Focusable>
           )}
         </div>
 
@@ -315,40 +216,48 @@ export function Sidebar() {
             {navigation.map((item, index) => {
               const Icon = item.icon;
               const isActive = pathname === item.href;
-              const isFocused = isTVMode && focusedIndex === index;
+              const nextItemId = index < navigation.length - 1 ? navigation[index + 1].id : undefined;
+              const prevItemId = index > 0 ? navigation[index - 1].id : 'sidebar-search';
 
               return (
-                <Link
+                <Focusable
                   key={item.name}
-                  href={item.href}
-                  ref={(el) => {
-                    navRefs.current[index] = el;
+                  id={item.id}
+                  zoneId={ZONES.SIDEBAR}
+                  zonePriority={90 - index}
+                  navigationRules={{
+                    right: ZONES.HERO,
+                    down: nextItemId,
+                    up: prevItemId,
                   }}
-                  className={cn(
-                    'flex items-center space-x-3 rounded-lg transition-all duration-200',
-                    'focus:outline-none focus:ring-2 focus:ring-primary',
-                    isExpanded ? 'px-4 py-3' : 'justify-center py-3',
-                    isActive
-                      ? 'bg-primary text-white'
-                      : 'text-gray-400 hover:text-white hover:bg-gray-900',
-                    isFocused && 'ring-2 ring-primary bg-gray-900'
-                  )}
                 >
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2 }}
-                        className="text-sm font-medium whitespace-nowrap"
-                      >
-                        {item.name}
-                      </motion.span>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      'flex items-center space-x-3 rounded-lg transition-all duration-200',
+                      'focus:outline-none focus:ring-2 focus:ring-primary',
+                      isExpanded ? 'px-4 py-3' : 'justify-center py-3',
+                      isActive
+                        ? 'bg-primary text-white'
+                        : 'text-gray-400 hover:text-white hover:bg-gray-900'
                     )}
-                  </AnimatePresence>
-                </Link>
+                  >
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.span
+                          initial={{ opacity: 0, x: -10 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0, x: -10 }}
+                          transition={{ duration: 0.2 }}
+                          className="text-sm font-medium whitespace-nowrap"
+                        >
+                          {item.name}
+                        </motion.span>
+                      )}
+                    </AnimatePresence>
+                  </Link>
+                </Focusable>
               );
             })}
           </div>
