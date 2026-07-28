@@ -90,6 +90,11 @@ export const Focusable = forwardRef<HTMLElement, FocusableProps>(
       {
         ref,
         tabIndex: enabled ? 0 : -1,
+        'data-zone': zoneId,
+        'data-nav-up': navigationRules?.up || undefined,
+        'data-nav-down': navigationRules?.down || undefined,
+        'data-nav-left': navigationRules?.left || undefined,
+        'data-nav-right': navigationRules?.right || undefined,
         className: cn(
           className,
           focused && focusClassName,

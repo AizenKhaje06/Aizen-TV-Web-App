@@ -121,8 +121,31 @@ class RemoteControlManager {
 
     if (direction) {
       console.log('[RemoteControl] Attempting to move focus:', direction);
+      
+      // Try to get the currently focused element's navigation rules
+      const currentElement = document.activeElement as HTMLElement;
+      if (currentElement) {
+        // Check if element has navigation rule data attribute
+        const navRuleTarget = currentElement.getAttribute(`data-nav-${direction}`);
+        
+        if (navRuleTarget) {
+          console.log('[RemoteControl] Found navigation rule target:', navRuleTarget);
+          // Try to focus the target element by ID or zone
+          const targetElement = document.getElementById(navRuleTarget) || 
+                               document.querySelector(`[data-zone="${navRuleTarget}"]`) as HTMLElement;
+          
+          if (targetElement) {
+            targetElement.focus();
+            event.preventDefault();
+            console.log('[RemoteControl] Focused via navigation rule');
+            return;
+          }
+        }
+      }
+      
+      // Fall back to spatial navigation
       const moved = moveFocus(direction);
-      console.log('[RemoteControl] Focus moved:', moved);
+      console.log('[RemoteControl] Focus moved via spatial nav:', moved);
       if (moved) {
         event.preventDefault();
       }
