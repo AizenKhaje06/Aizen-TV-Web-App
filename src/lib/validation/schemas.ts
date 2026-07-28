@@ -45,9 +45,9 @@ export const episodeSchema = z
  */
 export const searchQuerySchema = z
   .string()
-  .min(1, 'Search query cannot be empty')
+  .trim() // Trim first
+  .min(1, 'Search query cannot be empty') // Then validate length
   .max(100, 'Search query is too long')
-  .trim()
   .transform((val) => val.replace(/[<>]/g, '')); // Remove potential HTML
 
 /**
