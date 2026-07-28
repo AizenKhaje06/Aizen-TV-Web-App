@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arrow Key Test</title>
+    <style>
+        body {
+            background: #000;
+            color: #fff;
+            font-family: monospace;
+            padding: 20px;
+        }
+        #log {
+            white-space: pre-wrap;
+            background: #111;
+            padding: 20px;
+            border-radius: 8px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .key-event {
+            color: #0f0;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>Arrow Key Test</h1>
+    <p>Press any key to test if it's being captured...</p>
+    <div id="log"></div>
+
+    <script>
+        const log = document.getElementById('log');
+        
+        function addLog(message) {
+            const entry = document.createElement('div');
+            entry.className = 'key-event';
+            entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            log.prepend(entry);
+        }
+
+        // Test keydown
+        window.addEventListener('keydown', (e) => {
+            addLog(`KEYDOWN: key="${e.key}" code="${e.code}" keyCode=${e.keyCode}`);
+        });
+
+        // Test keyup
+        window.addEventListener('keyup', (e) => {
+            addLog(`KEYUP: key="${e.key}" code="${e.code}" keyCode=${e.keyCode}`);
+        });
+
+        // Test keypress
+        window.addEventListener('keypress', (e) => {
+            addLog(`KEYPRESS: key="${e.key}" code="${e.code}" keyCode=${e.keyCode}`);
+        });
+
+        addLog('Listening for keyboard events...');
+    </script>
+</body>
+</html>
