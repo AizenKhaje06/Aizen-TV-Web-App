@@ -22,23 +22,34 @@ interface TVFocusProviderProps {
 
 export function TVFocusProvider({ children, enabled = true }: TVFocusProviderProps) {
   const [isTVMode, setIsTVMode] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const [focusedElement, setFocusedElement] = useState<HTMLElement | null>(null);
   const [focusableElements] = useState<Set<HTMLElement>>(new Set());
   const setStoreTVMode = useSettingsStore((state) => state.setTVMode);
 
-  // Detect TV mode on mount
+  // Set client-side flag
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  // Detect TV mode on client
+  useEffect(() => {
+    if (!isClient) return;
+
     // Check for manual override in localStorage (for testing)
     let isTV = false;
-    const override = typeof window !== 'undefined' ? localStorage.getItem('tv-mode-override') : null;
+    const override = localStorage.getItem('tv-mode-override');
     
     if (override === 'true') {
       isTV = true;
+      console.log('[TVFocusProvider] TV mode override detected: true');
     } else if (override === 'false') {
       isTV = false;
+      console.log('[TVFocusProvider] TV mode override detected: false');
     } else {
       // Auto-detect based on device
       isTV = enabled && shouldUseTVMode();
+      console.log('[TVFocusProvider] Auto-detect TV mode:', isTV);
     }
     
     setIsTVMode(isTV);
@@ -64,7 +75,7 @@ export function TVFocusProvider({ children, enabled = true }: TVFocusProviderPro
         document.body.style.userSelect = '';
       }
     };
-  }, [enabled, setStoreTVMode]);
+  }, [isClient, enabled, setStoreTVMode]);
 
   // Track focused element
   useEffect(() => {
