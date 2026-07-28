@@ -1,14 +1,13 @@
 /**
  * TV Layout Provider
  * 
- * Wraps the application with TV-specific providers when in TV mode.
- * Manages focus and remote control handling.
+ * Wraps the application with TV-specific providers.
+ * Always renders TVFocusProvider, which handles TV mode detection internally.
  */
 
 'use client';
 
 import { ReactNode } from 'react';
-import { useTVMode } from '@/hooks/use-tv-mode';
 import { TVFocusProvider } from './focus/tv-focus-provider';
 
 interface TVLayoutProviderProps {
@@ -16,19 +15,11 @@ interface TVLayoutProviderProps {
 }
 
 export function TVLayoutProvider({ children }: TVLayoutProviderProps) {
-  const { isTVMode } = useTVMode();
-
-  // If not in TV mode, just render children
-  if (!isTVMode) {
-    return <>{children}</>;
-  }
-
-  // In TV mode, wrap with focus provider
+  // Always render TVFocusProvider - it will handle TV mode detection internally
+  // This ensures the remote control system is initialized when TV mode is detected
   return (
     <TVFocusProvider>
-      <div className="tv-mode" data-tv-mode="true">
-        {children}
-      </div>
+      {children}
     </TVFocusProvider>
   );
 }
