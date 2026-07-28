@@ -159,8 +159,7 @@ export function HeroBanner({
               zonePriority={100}
               navigationRules={{
                 right: 'hero-more-info-button',
-                left: null,
-                up: null,
+                down: ZONES.CONTINUE_WATCHING, // Allow down navigation
               }}
               className="inline-block"
             >
@@ -177,12 +176,11 @@ export function HeroBanner({
             <Focusable
               id="hero-more-info-button"
               zoneId={ZONES.HERO}
-              zonePriority={90}
+              zonePriority=90}
               navigationRules={{
                 left: 'hero-play-button',
                 right: 'hero-mute-button',
-                up: null,
-                down: 'continue-watching-first-card', // Jump to first section
+                down: ZONES.CONTINUE_WATCHING, // Allow down navigation
               }}
               className="inline-block"
             >
@@ -207,9 +205,7 @@ export function HeroBanner({
         zonePriority={80}
         navigationRules={{
           left: 'hero-more-info-button',
-          right: null,
-          up: null,
-          down: 'continue-watching-first-card',
+          down: ZONES.CONTINUE_WATCHING, // Allow down navigation
         }}
         className="absolute bottom-8 right-8 z-20"
       >
