@@ -158,8 +158,9 @@ export function HeroBanner({
               zoneId={ZONES.HERO}
               zonePriority={100}
               navigationRules={{
+                left: ZONES.SIDEBAR,
                 right: 'hero-more-info-button',
-                down: ZONES.CONTINUE_WATCHING, // Allow down navigation
+                down: ZONES.CONTINUE_WATCHING,
               }}
               className="inline-block"
             >
@@ -180,7 +181,7 @@ export function HeroBanner({
               navigationRules={{
                 left: 'hero-play-button',
                 right: 'hero-mute-button',
-                down: ZONES.CONTINUE_WATCHING, // Allow down navigation
+                down: ZONES.CONTINUE_WATCHING,
               }}
               className="inline-block"
             >

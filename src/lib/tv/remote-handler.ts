@@ -125,25 +125,51 @@ class RemoteControlManager {
       // Try to get the currently focused element's navigation rules
       const currentElement = document.activeElement as HTMLElement;
       if (currentElement) {
+        console.log('[RemoteControl] Current element:', currentElement.id || currentElement.className);
+        
         // Check if element has navigation rule data attribute
         const navRuleTarget = currentElement.getAttribute(`data-nav-${direction}`);
         
         if (navRuleTarget) {
-          console.log('[RemoteControl] Found navigation rule target:', navRuleTarget);
-          // Try to focus the target element by ID or zone
-          const targetElement = document.getElementById(navRuleTarget) || 
-                               document.querySelector(`[data-zone="${navRuleTarget}"]`) as HTMLElement;
+          console.log('[RemoteControl] Found navigation rule:', direction, '→', navRuleTarget);
           
-          if (targetElement) {
+          // First try to find element by ID
+          let targetElement = document.getElementById(navRuleTarget);
+          
+          // If not found by ID, try to find first focusable in zone
+          if (!targetElement) {
+            console.log('[RemoteControl] Not found by ID, searching for zone:', navRuleTarget);
+            const zoneElements = document.querySelectorAll(`[data-zone="${navRuleTarget}"]`);
+            console.log('[RemoteControl] Found', zoneElements.length, 'elements in zone');
+            
+            if (zoneElements.length > 0) {
+              // Find the first focusable element in the zone
+              for (let i = 0; i < zoneElements.length; i++) {
+                const el = zoneElements[i] as HTMLElement;
+                if (el.tabIndex >= 0) {
+                  targetElement = el;
+                  console.log('[RemoteControl] Found focusable element in zone:', el.id || el.className);
+                  break;
+                }
+              }
+            }
+          }
+          
+          if (targetElement && targetElement.tabIndex >= 0) {
             targetElement.focus();
             event.preventDefault();
-            console.log('[RemoteControl] Focused via navigation rule');
+            console.log('[RemoteControl] ✅ Focused via navigation rule:', targetElement.id || targetElement.className);
             return;
+          } else {
+            console.log('[RemoteControl] ❌ Target not found or not focusable:', navRuleTarget);
           }
+        } else {
+          console.log('[RemoteControl] No navigation rule defined for direction:', direction);
         }
       }
       
       // Fall back to spatial navigation
+      console.log('[RemoteControl] Falling back to spatial navigation');
       const moved = moveFocus(direction);
       console.log('[RemoteControl] Focus moved via spatial nav:', moved);
       if (moved) {
